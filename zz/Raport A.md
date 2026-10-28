@@ -54,11 +54,6 @@ W wywiadach zidentyfikowaliśmy następujące powtarzające się problemy:
 # Etap 4
 ### Trudność w znalzienu profesjonalnych źródeł wiedzy
 
-> [!warning]- 
-> Zminiłem dostkiwośżć z 5 na 3, żeby było, że nasz wybór jest oparty na wynikach xd
-> 
-
-
 | Kryterium              | Pytanie pomocnicze                      |
 | ---------------------- | --------------------------------------- |
 | Częstotliwość          | 4                                       |
@@ -100,7 +95,7 @@ System wymaga wcześniejszego opracowania planów treningowych i działa jedynie
 Rozwiązanie działa podobnie jak poprzednie, ale wykorzystuje czat z modelem językowym jako dodatkowy interfejs — na przykład rozmowę zamiast tradycyjnego formularza. Model może korzystać z przygotowanej wcześniej bazy sprawdzonych artykułów dotyczących treningu i odpowiadać na jej podstawie na pytania użytkownika. Ograniczenia pozostają zbliżone do rozwiązania bez AI. 
 
 ### Agent
-System wieloagentowy rozpoznaje potrzeby użytkownika, wyszukuje informacje dotyczące efektywnego treningu w różnych dyscyplinach oraz reaguje na zmiany w jego sytuacji. System ma dostęp do różnych źródeł danych o aktywności użytkownika (kalendarz, dane o treningach, kontuzjach, biometria z zegarka).
+System wieloagentowy rozpoznaje potrzeby użytkownika, wyszukuje informacje dotyczące efektywnego treningu w różnych dyscyplinach oraz reaguje na zmiany w jego sytuacji. System ma dostęp do różnych źródeł danych o aktywności użytkownika (kalendarz, dane o treningach, kontuzjach, biometria z zegarka). Z interfejsem webowym prostym.
 ##### Co robi użytkownik?
 - Określa swój cel treningowy.
 - Podaje dostępny czas oraz informacje o kondycji.
@@ -131,25 +126,30 @@ System wieloagentowy rozpoznaje potrzeby użytkownika, wyszukuje informacje doty
 ##### Dlaczego agent może być lepszy niż prostsze rozwiązanie?
 - Agent może na bieżąco reagować na zmiany w zachowaniu, kondycji, dostępności i możliwościach użytkownika oraz odpowiednio dostosowywać dalsze działania.
 
+# Etap 6
+
+> [!quote] 
+> Wierzymy, że ludzie amatorsko uprawiający sport doświadczają trudności w układaniu planu treningowego, dostosowywaniu go do zmieniających się potrzeb i oceny jego skuteczności. Sprawdzimy to na grupie  sportowców amatorów, przez porównanie zmian w planie wprowadzonych przez badaną osobę ze zmianami zrobionymi przez agenta. Za dowód uznamy deklaracje większości badanych, że wolą nasze plany od swoich. Wynik, to sytuacja w której ludzie w większości wolą plany ułożone przez siebie.
+
 # Etap 7
 
 Coś trzeba wymyśleć...
 
-> Na pierwszych zajęciach wystarczy zaplanować test, nie trzeba budować aplikacji. Możliwe metody:
-> - krótki wywiad o ostatnim rzeczywistym doświadczeniu;
-> - porównanie obecnego sposobu nauki z prostym prototypem;
-> - test ręcznie symulowanej usługi („concierge test”);
-> - prosta makieta lub przykładowa interakcja;
-> - krótka ankieta uzupełniająca wywiady — nie jako jedyne źródło dowodów.
-> 
-> Wymiana wywiadów między zespołami jest użyteczna, jeśli rozmówcy pasują do grupy docelowej. Zespół prowadzący wywiad powinien badać doświadczenia i zachowania, a nie sprzedawać pomysł.
-> 
-> **Plan testu:**
-> - Hipoteza:
-> - Kogo badamy i dlaczego te osoby:
-> - Metoda:
-> - Pytania / zadanie:
-> - Jaki wynik wspiera hipotezę:
-> - Jaki wynik jej przeczy:
-> - Ograniczenia testu:
-> - Co zrobimy po wyniku pozytywnym, negatywnym lub niejednoznacznym
+ ### Plan testu:
+- Hipoteza: Ludzie wolą ułożone przez nas testy od ułożonysch samodzielnie. 
+- Kogo badamy i dlaczego te osoby: Osoby amatorsko uprawiające sport.
+- Metoda: Przedstawienie grupie potencjalnych użytkowników makiety aplikacji z ustalonym na stałe planem. Użytkownik odpowiada na pytania dotyczące treningu i plan jest zmieniany przez LLM na podstawie odpowiedzi użytkownika.
+- Pytania / zadanie:
+	- Czy aplikacja pomogła Ci w ułożeniu planu?
+	- Czy masz zaufanie do tak ułożonego planu?
+	- Czy użycie aplikacji było łatwe?
+	- Czy chciałbyś aby plan był automatycznie aktualizowany na podstawie twoich treinigów.
+	- Co było trudne?
+	- Jakie problemy widzisz?
+	- Który plan wolisz?
+- Jaki wynik wspiera hipotezę: WIększość badanych woli nasz plan.
+- Jaki wynik jej przeczy: Większość badanych woli swój plan.
+- Ograniczenia testu: Wynik zależy od jakości planu stworzonego przez nas na potrzeby testu.
+- Co zrobimy po wyniku pozytywnym, negatywnym lub niejednoznacznym: 
+	- pozytywnym: Przystąpimy do implementacji pełnego rozwiązania.
+	- negatywnym/niejednoznacznym: Przeanalizujemy odpowiedzi użytkowników, zastanowimy się gdzie leży problem, powtórzymy test w innych warunkach, które określimy na podstawie odpowiedzi badanych (np. z ulepszoną metodą generowania planów lub dokładniejszymi pytaniami).
