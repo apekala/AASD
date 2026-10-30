@@ -10,7 +10,6 @@
 - Franciszek Zarębski
 
 **Repozytorium projektu:** https://github.com/apekala/AASD  
-**Dokumentacja prac zespołu:** https://github.com/apekala/AASD/tree/main/zz
 
 ## 1. Cel i zakres projektu
 
@@ -77,7 +76,7 @@ Zebrany materiał pozwolił wyróżnić następujące trudności:
 |---|---|---|
 | Dostosowanie treningów do zmieniających się możliwości | Samodzielne pomijanie treningów przez rozmówczynię rozpoczynającą bieganie | Bezpośrednio opisany przypadek; częstotliwość w szerszej grupie wymaga zbadania |
 | Ocena własnych umiejętności i postępów | Relacja gracza padla oraz doświadczenia instruktora narciarstwa | Przesłanka dotycząca znaczenia informacji zwrotnej |
-| Ustalenie kolejnych kroków rozwoju | Niepewność przy zmianie planu biegania i przy dalszej nauce padla | Wstępny wspólny kierunek problemu |
+| Ustalenie kolejnych kroków rozwoju | Niepewność przy zmianie planu biegania i przy dalszej nauce padla | Wstępne ustalenie problemu |
 | Rozumienie zależności między elementami treningu | Rozmowa dotycząca biegania | Problem rozpoznany w jednym wywiadzie |
 | Ocena przydatności i wiarygodności materiałów | Korzystanie z ChatGPT i materiałów wideo; brak indywidualnej informacji zwrotnej | Wymaga dalszego badania; samo korzystanie z tych źródeł nie świadczy o ich niskiej jakości |
 | Dobór sprzętu | Doświadczenia instruktora narciarstwa | Problem istotny w opisanym kontekście, bez potwierdzenia we wszystkich dyscyplinach |
