@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Defs_monitoring" targetNamespace="http://bpmn.io/schema/bpmn" exporter="hand-written" exporterVersion="1.0">
+  <bpmn:collaboration id="Collab_monitoring" name="Process 3 - Progress monitoring and weekly review">
+    <bpmn:participant id="P_trainee" name="Trainee (web app)" />
+    <bpmn:participant id="P_coord" name="Coordinator agent" processRef="Proc_coord" />
+    <bpmn:participant id="P_mon" name="Monitoring agent" processRef="Proc_mon" />
+    <bpmn:participant id="P_act" name="Activity platform" />
+    <bpmn:participant id="P_plan" name="Planning agent" />
+    <bpmn:participant id="P_expl" name="Explanation agent" />
+    <bpmn:participant id="P_cal" name="Calendar service" />
+    <bpmn:messageFlow id="Msg_coord_m_start" name="accepted plan" sourceRef="P_coord" targetRef="m_start" />
+    <bpmn:messageFlow id="Msg_w_notify_m_upd" name="plan updated" sourceRef="w_notify" targetRef="m_upd" />
+    <bpmn:messageFlow id="Msg_trainee_m_survey" name="survey / manual activity" sourceRef="P_trainee" targetRef="m_survey" />
+    <bpmn:messageFlow id="Msg_act_m_act" name="new activity" sourceRef="P_act" targetRef="m_act" />
+    <bpmn:messageFlow id="Msg_m_sendsum_w_start" name="weekly summary" sourceRef="m_sendsum" targetRef="w_start" />
+    <bpmn:messageFlow id="Msg_m_report_coord" name="significant deviation (process 2)" sourceRef="m_report" targetRef="P_coord" />
+    <bpmn:messageFlow id="Msg_w_reqp_plan" name="adjustment request" sourceRef="w_reqp" targetRef="P_plan" />
+    <bpmn:messageFlow id="Msg_plan_w_gotp" name="proposal or empty reply" sourceRef="P_plan" targetRef="w_gotp" />
+    <bpmn:messageFlow id="Msg_w_summaryonly_trainee" name="weekly summary" sourceRef="w_summaryonly" targetRef="P_trainee" />
+    <bpmn:messageFlow id="Msg_w_reqe_expl" name="proposal" sourceRef="w_reqe" targetRef="P_expl" />
+    <bpmn:messageFlow id="Msg_expl_w_gote" name="explanation" sourceRef="P_expl" targetRef="w_gote" />
+    <bpmn:messageFlow id="Msg_w_present_trainee" name="summary + proposal + explanation" sourceRef="w_present" targetRef="P_trainee" />
+    <bpmn:messageFlow id="Msg_trainee_w_decision" name="decision (+ reason)" sourceRef="P_trainee" targetRef="w_decision" />
+    <bpmn:messageFlow id="Msg_w_kept_trainee" name="plan kept" sourceRef="w_kept" targetRef="P_trainee" />
+    <bpmn:messageFlow id="Msg_w_calendar_cal" name="updated events" sourceRef="w_calendar" targetRef="P_cal" />
+    <bpmn:messageFlow id="Msg_w_done_trainee" name="confirmation" sourceRef="w_done" targetRef="P_trainee" />
+  </bpmn:collaboration>
+  <bpmn:process id="Proc_coord" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_coord">
+      <bpmn:lane id="Lane_uh" name="UserHandler">
+        <bpmn:flowNodeRef>w_summaryonly</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_present</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_decision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_done</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_wm" name="WorkflowManager">
+        <bpmn:flowNodeRef>w_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_retry</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_reqp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_gotp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_hasprop</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_reqe</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_gote</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_accepted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_attempts</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_kept</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_commit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_calendar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>w_notify</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="w_start" name="Weekly summary received"><bpmn:outgoing>Flow_w_start_w_retry</bpmn:outgoing><bpmn:messageEventDefinition id="w_start_md" /></bpmn:startEvent>
+    <bpmn:exclusiveGateway id="w_retry" name=""><bpmn:incoming>Flow_w_start_w_retry</bpmn:incoming><bpmn:incoming>Flow_w_attempts_w_retry</bpmn:incoming><bpmn:outgoing>Flow_w_retry_w_reqp</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:intermediateThrowEvent id="w_reqp" name="Request adjustments for next week"><bpmn:incoming>Flow_w_retry_w_reqp</bpmn:incoming><bpmn:outgoing>Flow_w_reqp_w_gotp</bpmn:outgoing><bpmn:messageEventDefinition id="w_reqp_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="w_gotp" name="Reply received"><bpmn:incoming>Flow_w_reqp_w_gotp</bpmn:incoming><bpmn:outgoing>Flow_w_gotp_w_hasprop</bpmn:outgoing><bpmn:messageEventDefinition id="w_gotp_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="w_hasprop" name="Proposal?"><bpmn:incoming>Flow_w_gotp_w_hasprop</bpmn:incoming><bpmn:outgoing>Flow_w_hasprop_w_summaryonly</bpmn:outgoing><bpmn:outgoing>Flow_w_hasprop_w_reqe</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="w_summaryonly" name="Summary shown"><bpmn:incoming>Flow_w_hasprop_w_summaryonly</bpmn:incoming><bpmn:messageEventDefinition id="w_summaryonly_md" /></bpmn:endEvent>
+    <bpmn:intermediateThrowEvent id="w_reqe" name="Request explanation"><bpmn:incoming>Flow_w_hasprop_w_reqe</bpmn:incoming><bpmn:outgoing>Flow_w_reqe_w_gote</bpmn:outgoing><bpmn:messageEventDefinition id="w_reqe_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="w_gote" name="Explanation received"><bpmn:incoming>Flow_w_reqe_w_gote</bpmn:incoming><bpmn:outgoing>Flow_w_gote_w_present</bpmn:outgoing><bpmn:messageEventDefinition id="w_gote_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:intermediateThrowEvent id="w_present" name="Present summary and proposal"><bpmn:incoming>Flow_w_gote_w_present</bpmn:incoming><bpmn:outgoing>Flow_w_present_w_decision</bpmn:outgoing><bpmn:messageEventDefinition id="w_present_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="w_decision" name="Decision received"><bpmn:incoming>Flow_w_present_w_decision</bpmn:incoming><bpmn:outgoing>Flow_w_decision_w_accepted</bpmn:outgoing><bpmn:messageEventDefinition id="w_decision_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="w_accepted" name="Accepted?"><bpmn:incoming>Flow_w_decision_w_accepted</bpmn:incoming><bpmn:outgoing>Flow_w_accepted_w_commit</bpmn:outgoing><bpmn:outgoing>Flow_w_accepted_w_attempts</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="w_attempts" name="Attempts left?"><bpmn:incoming>Flow_w_accepted_w_attempts</bpmn:incoming><bpmn:outgoing>Flow_w_attempts_w_retry</bpmn:outgoing><bpmn:outgoing>Flow_w_attempts_w_kept</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="w_kept" name="Current plan kept, trainee told"><bpmn:incoming>Flow_w_attempts_w_kept</bpmn:incoming><bpmn:messageEventDefinition id="w_kept_md" /></bpmn:endEvent>
+    <bpmn:task id="w_commit" name="Save plan version"><bpmn:incoming>Flow_w_accepted_w_commit</bpmn:incoming><bpmn:outgoing>Flow_w_commit_w_calendar</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="w_calendar" name="Update calendar"><bpmn:incoming>Flow_w_commit_w_calendar</bpmn:incoming><bpmn:outgoing>Flow_w_calendar_w_notify</bpmn:outgoing></bpmn:task>
+    <bpmn:intermediateThrowEvent id="w_notify" name="Notify monitoring"><bpmn:incoming>Flow_w_calendar_w_notify</bpmn:incoming><bpmn:outgoing>Flow_w_notify_w_done</bpmn:outgoing><bpmn:messageEventDefinition id="w_notify_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:endEvent id="w_done" name="Change confirmed"><bpmn:incoming>Flow_w_notify_w_done</bpmn:incoming><bpmn:messageEventDefinition id="w_done_md" /></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_w_start_w_retry" sourceRef="w_start" targetRef="w_retry" />
+    <bpmn:sequenceFlow id="Flow_w_retry_w_reqp" sourceRef="w_retry" targetRef="w_reqp" />
+    <bpmn:sequenceFlow id="Flow_w_reqp_w_gotp" sourceRef="w_reqp" targetRef="w_gotp" />
+    <bpmn:sequenceFlow id="Flow_w_gotp_w_hasprop" sourceRef="w_gotp" targetRef="w_hasprop" />
+    <bpmn:sequenceFlow id="Flow_w_hasprop_w_summaryonly" name="no" sourceRef="w_hasprop" targetRef="w_summaryonly" />
+    <bpmn:sequenceFlow id="Flow_w_hasprop_w_reqe" name="yes" sourceRef="w_hasprop" targetRef="w_reqe" />
+    <bpmn:sequenceFlow id="Flow_w_reqe_w_gote" sourceRef="w_reqe" targetRef="w_gote" />
+    <bpmn:sequenceFlow id="Flow_w_gote_w_present" sourceRef="w_gote" targetRef="w_present" />
+    <bpmn:sequenceFlow id="Flow_w_present_w_decision" sourceRef="w_present" targetRef="w_decision" />
+    <bpmn:sequenceFlow id="Flow_w_decision_w_accepted" sourceRef="w_decision" targetRef="w_accepted" />
+    <bpmn:sequenceFlow id="Flow_w_accepted_w_commit" name="yes" sourceRef="w_accepted" targetRef="w_commit" />
+    <bpmn:sequenceFlow id="Flow_w_accepted_w_attempts" name="no" sourceRef="w_accepted" targetRef="w_attempts" />
+    <bpmn:sequenceFlow id="Flow_w_attempts_w_retry" name="yes" sourceRef="w_attempts" targetRef="w_retry" />
+    <bpmn:sequenceFlow id="Flow_w_attempts_w_kept" name="no" sourceRef="w_attempts" targetRef="w_kept" />
+    <bpmn:sequenceFlow id="Flow_w_commit_w_calendar" sourceRef="w_commit" targetRef="w_calendar" />
+    <bpmn:sequenceFlow id="Flow_w_calendar_w_notify" sourceRef="w_calendar" targetRef="w_notify" />
+    <bpmn:sequenceFlow id="Flow_w_notify_w_done" sourceRef="w_notify" targetRef="w_done" />
+  </bpmn:process>
+  <bpmn:process id="Proc_mon" isExecutable="false">
+    <bpmn:startEvent id="m_start" name="Accepted plan received"><bpmn:outgoing>Flow_m_start_m_load0</bpmn:outgoing><bpmn:messageEventDefinition id="m_start_md" /></bpmn:startEvent>
+    <bpmn:task id="m_load0" name="Load plan version"><bpmn:incoming>Flow_m_start_m_load0</bpmn:incoming><bpmn:outgoing>Flow_m_load0_m_loop</bpmn:outgoing></bpmn:task>
+    <bpmn:exclusiveGateway id="m_loop" name=""><bpmn:incoming>Flow_m_load0_m_loop</bpmn:incoming><bpmn:incoming>Flow_m_load_m_loop</bpmn:incoming><bpmn:incoming>Flow_m_active_m_loop</bpmn:incoming><bpmn:incoming>Flow_m_sendsum_m_loop</bpmn:incoming><bpmn:incoming>Flow_m_sig_m_loop</bpmn:incoming><bpmn:incoming>Flow_m_report_m_loop</bpmn:incoming><bpmn:outgoing>Flow_m_loop_m_wait</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:eventBasedGateway id="m_wait" name=""><bpmn:incoming>Flow_m_loop_m_wait</bpmn:incoming><bpmn:outgoing>Flow_m_wait_m_upd</bpmn:outgoing><bpmn:outgoing>Flow_m_wait_m_timer</bpmn:outgoing><bpmn:outgoing>Flow_m_wait_m_survey</bpmn:outgoing><bpmn:outgoing>Flow_m_wait_m_act</bpmn:outgoing></bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="m_upd" name="Plan updated"><bpmn:incoming>Flow_m_wait_m_upd</bpmn:incoming><bpmn:outgoing>Flow_m_upd_m_load</bpmn:outgoing><bpmn:messageEventDefinition id="m_upd_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:task id="m_load" name="Load new plan version"><bpmn:incoming>Flow_m_upd_m_load</bpmn:incoming><bpmn:outgoing>Flow_m_load_m_loop</bpmn:outgoing></bpmn:task>
+    <bpmn:intermediateCatchEvent id="m_timer" name="Sunday evening"><bpmn:incoming>Flow_m_wait_m_timer</bpmn:incoming><bpmn:outgoing>Flow_m_timer_m_active</bpmn:outgoing><bpmn:timerEventDefinition id="m_timer_td"><bpmn:timeCycle xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">R/P1W</bpmn:timeCycle></bpmn:timerEventDefinition></bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="m_active" name="Plan active?"><bpmn:incoming>Flow_m_timer_m_active</bpmn:incoming><bpmn:outgoing>Flow_m_active_m_summary</bpmn:outgoing><bpmn:outgoing>Flow_m_active_m_loop</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:task id="m_summary" name="Compile weekly summary"><bpmn:incoming>Flow_m_active_m_summary</bpmn:incoming><bpmn:outgoing>Flow_m_summary_m_sendsum</bpmn:outgoing></bpmn:task>
+    <bpmn:intermediateThrowEvent id="m_sendsum" name="Send weekly summary"><bpmn:incoming>Flow_m_summary_m_sendsum</bpmn:incoming><bpmn:outgoing>Flow_m_sendsum_m_loop</bpmn:outgoing><bpmn:messageEventDefinition id="m_sendsum_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="m_survey" name="Survey or manual entry"><bpmn:incoming>Flow_m_wait_m_survey</bpmn:incoming><bpmn:outgoing>Flow_m_survey_m_dmerge</bpmn:outgoing><bpmn:messageEventDefinition id="m_survey_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="m_act" name="Activity synced"><bpmn:incoming>Flow_m_wait_m_act</bpmn:incoming><bpmn:outgoing>Flow_m_act_m_dmerge</bpmn:outgoing><bpmn:messageEventDefinition id="m_act_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="m_dmerge" name=""><bpmn:incoming>Flow_m_survey_m_dmerge</bpmn:incoming><bpmn:incoming>Flow_m_act_m_dmerge</bpmn:incoming><bpmn:outgoing>Flow_m_dmerge_m_compare</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:task id="m_compare" name="Compare with plan"><bpmn:incoming>Flow_m_dmerge_m_compare</bpmn:incoming><bpmn:outgoing>Flow_m_compare_m_sig</bpmn:outgoing></bpmn:task>
+    <bpmn:exclusiveGateway id="m_sig" name="Significant deviation?"><bpmn:incoming>Flow_m_compare_m_sig</bpmn:incoming><bpmn:outgoing>Flow_m_sig_m_report</bpmn:outgoing><bpmn:outgoing>Flow_m_sig_m_loop</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:intermediateThrowEvent id="m_report" name="Report deviation"><bpmn:incoming>Flow_m_sig_m_report</bpmn:incoming><bpmn:outgoing>Flow_m_report_m_loop</bpmn:outgoing><bpmn:messageEventDefinition id="m_report_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="Flow_m_start_m_load0" sourceRef="m_start" targetRef="m_load0" />
+    <bpmn:sequenceFlow id="Flow_m_load0_m_loop" sourceRef="m_load0" targetRef="m_loop" />
+    <bpmn:sequenceFlow id="Flow_m_loop_m_wait" sourceRef="m_loop" targetRef="m_wait" />
+    <bpmn:sequenceFlow id="Flow_m_wait_m_upd" sourceRef="m_wait" targetRef="m_upd" />
+    <bpmn:sequenceFlow id="Flow_m_wait_m_timer" sourceRef="m_wait" targetRef="m_timer" />
+    <bpmn:sequenceFlow id="Flow_m_wait_m_survey" sourceRef="m_wait" targetRef="m_survey" />
+    <bpmn:sequenceFlow id="Flow_m_wait_m_act" sourceRef="m_wait" targetRef="m_act" />
+    <bpmn:sequenceFlow id="Flow_m_upd_m_load" sourceRef="m_upd" targetRef="m_load" />
+    <bpmn:sequenceFlow id="Flow_m_load_m_loop" sourceRef="m_load" targetRef="m_loop" />
+    <bpmn:sequenceFlow id="Flow_m_timer_m_active" sourceRef="m_timer" targetRef="m_active" />
+    <bpmn:sequenceFlow id="Flow_m_active_m_summary" name="yes" sourceRef="m_active" targetRef="m_summary" />
+    <bpmn:sequenceFlow id="Flow_m_active_m_loop" name="no" sourceRef="m_active" targetRef="m_loop" />
+    <bpmn:sequenceFlow id="Flow_m_summary_m_sendsum" sourceRef="m_summary" targetRef="m_sendsum" />
+    <bpmn:sequenceFlow id="Flow_m_sendsum_m_loop" sourceRef="m_sendsum" targetRef="m_loop" />
+    <bpmn:sequenceFlow id="Flow_m_survey_m_dmerge" sourceRef="m_survey" targetRef="m_dmerge" />
+    <bpmn:sequenceFlow id="Flow_m_act_m_dmerge" sourceRef="m_act" targetRef="m_dmerge" />
+    <bpmn:sequenceFlow id="Flow_m_dmerge_m_compare" sourceRef="m_dmerge" targetRef="m_compare" />
+    <bpmn:sequenceFlow id="Flow_m_compare_m_sig" sourceRef="m_compare" targetRef="m_sig" />
+    <bpmn:sequenceFlow id="Flow_m_sig_m_report" name="yes" sourceRef="m_sig" targetRef="m_report" />
+    <bpmn:sequenceFlow id="Flow_m_sig_m_loop" name="no" sourceRef="m_sig" targetRef="m_loop" />
+    <bpmn:sequenceFlow id="Flow_m_report_m_loop" sourceRef="m_report" targetRef="m_loop" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_monitoring">
+    <bpmndi:BPMNPlane id="Plane_monitoring" bpmnElement="Collab_monitoring">
+      <bpmndi:BPMNShape id="P_trainee_di" bpmnElement="P_trainee" isHorizontal="true"><dc:Bounds x="100" y="60" width="3180" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_coord_di" bpmnElement="P_coord" isHorizontal="true"><dc:Bounds x="100" y="170" width="3180" height="350" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_uh_di" bpmnElement="Lane_uh" isHorizontal="true"><dc:Bounds x="130" y="170" width="3150" height="120" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_wm_di" bpmnElement="Lane_wm" isHorizontal="true"><dc:Bounds x="130" y="290" width="3150" height="230" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_mon_di" bpmnElement="P_mon" isHorizontal="true"><dc:Bounds x="100" y="570" width="3180" height="450" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_act_di" bpmnElement="P_act" isHorizontal="true"><dc:Bounds x="100" y="1070" width="3180" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_plan_di" bpmnElement="P_plan" isHorizontal="true"><dc:Bounds x="100" y="1180" width="3180" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_expl_di" bpmnElement="P_expl" isHorizontal="true"><dc:Bounds x="100" y="1290" width="3180" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_cal_di" bpmnElement="P_cal" isHorizontal="true"><dc:Bounds x="100" y="1400" width="3180" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_start_di" bpmnElement="m_start"><dc:Bounds x="212" y="612" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="175" y="652" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_load0_di" bpmnElement="m_load0"><dc:Bounds x="320" y="590" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_loop_di" bpmnElement="m_loop" isMarkerVisible="true"><dc:Bounds x="485" y="605" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_wait_di" bpmnElement="m_wait"><dc:Bounds x="625" y="605" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_upd_di" bpmnElement="m_upd"><dc:Bounds x="772" y="612" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="735" y="652" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_load_di" bpmnElement="m_load"><dc:Bounds x="880" y="590" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_timer_di" bpmnElement="m_timer"><dc:Bounds x="772" y="722" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="735" y="762" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_active_di" bpmnElement="m_active" isMarkerVisible="true"><dc:Bounds x="905" y="715" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="875" y="769" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_summary_di" bpmnElement="m_summary"><dc:Bounds x="1020" y="700" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_sendsum_di" bpmnElement="m_sendsum"><dc:Bounds x="1192" y="722" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1155" y="762" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_survey_di" bpmnElement="m_survey"><dc:Bounds x="772" y="832" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="735" y="872" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_act_di" bpmnElement="m_act"><dc:Bounds x="772" y="942" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="735" y="982" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_dmerge_di" bpmnElement="m_dmerge" isMarkerVisible="true"><dc:Bounds x="905" y="825" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_compare_di" bpmnElement="m_compare"><dc:Bounds x="1020" y="810" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_sig_di" bpmnElement="m_sig" isMarkerVisible="true"><dc:Bounds x="1185" y="825" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="1155" y="879" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="m_report_di" bpmnElement="m_report"><dc:Bounds x="1332" y="832" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1295" y="872" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_start_di" bpmnElement="w_start"><dc:Bounds x="1192" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1155" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_retry_di" bpmnElement="w_retry" isMarkerVisible="true"><dc:Bounds x="1325" y="325" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_reqp_di" bpmnElement="w_reqp"><dc:Bounds x="1472" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1435" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_gotp_di" bpmnElement="w_gotp"><dc:Bounds x="1612" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1575" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_hasprop_di" bpmnElement="w_hasprop" isMarkerVisible="true"><dc:Bounds x="1745" y="325" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="1715" y="379" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_summaryonly_di" bpmnElement="w_summaryonly"><dc:Bounds x="1892" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1855" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_reqe_di" bpmnElement="w_reqe"><dc:Bounds x="1892" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1855" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_gote_di" bpmnElement="w_gote"><dc:Bounds x="2032" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1995" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_present_di" bpmnElement="w_present"><dc:Bounds x="2172" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2135" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_decision_di" bpmnElement="w_decision"><dc:Bounds x="2312" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2275" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_accepted_di" bpmnElement="w_accepted" isMarkerVisible="true"><dc:Bounds x="2445" y="325" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="2415" y="379" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_attempts_di" bpmnElement="w_attempts" isMarkerVisible="true"><dc:Bounds x="2445" y="435" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="2415" y="489" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_kept_di" bpmnElement="w_kept"><dc:Bounds x="2592" y="442" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2555" y="482" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_commit_di" bpmnElement="w_commit"><dc:Bounds x="2700" y="310" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_calendar_di" bpmnElement="w_calendar"><dc:Bounds x="2840" y="310" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_notify_di" bpmnElement="w_notify"><dc:Bounds x="3012" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2975" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="w_done_di" bpmnElement="w_done"><dc:Bounds x="3152" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3115" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_m_start_m_load0_di" bpmnElement="Flow_m_start_m_load0"><di:waypoint x="248" y="630" /><di:waypoint x="320" y="630" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_load0_m_loop_di" bpmnElement="Flow_m_load0_m_loop"><di:waypoint x="420" y="630" /><di:waypoint x="485" y="630" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_loop_m_wait_di" bpmnElement="Flow_m_loop_m_wait"><di:waypoint x="535" y="630" /><di:waypoint x="625" y="630" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_wait_m_upd_di" bpmnElement="Flow_m_wait_m_upd"><di:waypoint x="675" y="630" /><di:waypoint x="772" y="630" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_wait_m_timer_di" bpmnElement="Flow_m_wait_m_timer"><di:waypoint x="650" y="655" /><di:waypoint x="650" y="740" /><di:waypoint x="772" y="740" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_wait_m_survey_di" bpmnElement="Flow_m_wait_m_survey"><di:waypoint x="650" y="655" /><di:waypoint x="650" y="850" /><di:waypoint x="772" y="850" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_wait_m_act_di" bpmnElement="Flow_m_wait_m_act"><di:waypoint x="650" y="655" /><di:waypoint x="650" y="960" /><di:waypoint x="772" y="960" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_upd_m_load_di" bpmnElement="Flow_m_upd_m_load"><di:waypoint x="808" y="630" /><di:waypoint x="880" y="630" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_load_m_loop_di" bpmnElement="Flow_m_load_m_loop"><di:waypoint x="930" y="590" /><di:waypoint x="930" y="580" /><di:waypoint x="510" y="580" /><di:waypoint x="510" y="605" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_timer_m_active_di" bpmnElement="Flow_m_timer_m_active"><di:waypoint x="808" y="740" /><di:waypoint x="905" y="740" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_active_m_summary_di" bpmnElement="Flow_m_active_m_summary"><di:waypoint x="955" y="740" /><di:waypoint x="1020" y="740" /><bpmndi:BPMNLabel><dc:Bounds x="933" y="718" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_active_m_loop_di" bpmnElement="Flow_m_active_m_loop"><di:waypoint x="930" y="765" /><di:waypoint x="930" y="775" /><di:waypoint x="510" y="775" /><di:waypoint x="510" y="655" /><bpmndi:BPMNLabel><dc:Bounds x="830" y="753" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_summary_m_sendsum_di" bpmnElement="Flow_m_summary_m_sendsum"><di:waypoint x="1120" y="740" /><di:waypoint x="1192" y="740" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_sendsum_m_loop_di" bpmnElement="Flow_m_sendsum_m_loop"><di:waypoint x="1210" y="758" /><di:waypoint x="1210" y="790" /><di:waypoint x="510" y="790" /><di:waypoint x="510" y="655" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_survey_m_dmerge_di" bpmnElement="Flow_m_survey_m_dmerge"><di:waypoint x="808" y="850" /><di:waypoint x="905" y="850" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_act_m_dmerge_di" bpmnElement="Flow_m_act_m_dmerge"><di:waypoint x="808" y="960" /><di:waypoint x="930" y="960" /><di:waypoint x="930" y="875" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_dmerge_m_compare_di" bpmnElement="Flow_m_dmerge_m_compare"><di:waypoint x="955" y="850" /><di:waypoint x="1020" y="850" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_compare_m_sig_di" bpmnElement="Flow_m_compare_m_sig"><di:waypoint x="1120" y="850" /><di:waypoint x="1185" y="850" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_sig_m_report_di" bpmnElement="Flow_m_sig_m_report"><di:waypoint x="1235" y="850" /><di:waypoint x="1332" y="850" /><bpmndi:BPMNLabel><dc:Bounds x="1224" y="828" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_sig_m_loop_di" bpmnElement="Flow_m_sig_m_loop"><di:waypoint x="1210" y="875" /><di:waypoint x="1210" y="885" /><di:waypoint x="510" y="885" /><di:waypoint x="510" y="655" /><bpmndi:BPMNLabel><dc:Bounds x="1110" y="863" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_m_report_m_loop_di" bpmnElement="Flow_m_report_m_loop"><di:waypoint x="1350" y="868" /><di:waypoint x="1350" y="900" /><di:waypoint x="510" y="900" /><di:waypoint x="510" y="655" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_start_w_retry_di" bpmnElement="Flow_w_start_w_retry"><di:waypoint x="1228" y="350" /><di:waypoint x="1325" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_retry_w_reqp_di" bpmnElement="Flow_w_retry_w_reqp"><di:waypoint x="1375" y="350" /><di:waypoint x="1472" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_reqp_w_gotp_di" bpmnElement="Flow_w_reqp_w_gotp"><di:waypoint x="1508" y="350" /><di:waypoint x="1612" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_gotp_w_hasprop_di" bpmnElement="Flow_w_gotp_w_hasprop"><di:waypoint x="1648" y="350" /><di:waypoint x="1745" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_hasprop_w_summaryonly_di" bpmnElement="Flow_w_hasprop_w_summaryonly"><di:waypoint x="1770" y="325" /><di:waypoint x="1770" y="230" /><di:waypoint x="1892" y="230" /><bpmndi:BPMNLabel><dc:Bounds x="1774" y="268" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_hasprop_w_reqe_di" bpmnElement="Flow_w_hasprop_w_reqe"><di:waypoint x="1795" y="350" /><di:waypoint x="1892" y="350" /><bpmndi:BPMNLabel><dc:Bounds x="1784" y="328" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_reqe_w_gote_di" bpmnElement="Flow_w_reqe_w_gote"><di:waypoint x="1928" y="350" /><di:waypoint x="2032" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_gote_w_present_di" bpmnElement="Flow_w_gote_w_present"><di:waypoint x="2068" y="350" /><di:waypoint x="2120" y="350" /><di:waypoint x="2120" y="230" /><di:waypoint x="2172" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_present_w_decision_di" bpmnElement="Flow_w_present_w_decision"><di:waypoint x="2208" y="230" /><di:waypoint x="2312" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_decision_w_accepted_di" bpmnElement="Flow_w_decision_w_accepted"><di:waypoint x="2348" y="230" /><di:waypoint x="2470" y="230" /><di:waypoint x="2470" y="325" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_accepted_w_commit_di" bpmnElement="Flow_w_accepted_w_commit"><di:waypoint x="2495" y="350" /><di:waypoint x="2700" y="350" /><bpmndi:BPMNLabel><dc:Bounds x="2522" y="328" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_accepted_w_attempts_di" bpmnElement="Flow_w_accepted_w_attempts"><di:waypoint x="2470" y="375" /><di:waypoint x="2470" y="435" /><bpmndi:BPMNLabel><dc:Bounds x="2474" y="395" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_attempts_w_retry_di" bpmnElement="Flow_w_attempts_w_retry"><di:waypoint x="2470" y="485" /><di:waypoint x="2470" y="500" /><di:waypoint x="1350" y="500" /><di:waypoint x="1350" y="375" /><bpmndi:BPMNLabel><dc:Bounds x="2370" y="478" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_attempts_w_kept_di" bpmnElement="Flow_w_attempts_w_kept"><di:waypoint x="2495" y="460" /><di:waypoint x="2592" y="460" /><bpmndi:BPMNLabel><dc:Bounds x="2484" y="438" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_commit_w_calendar_di" bpmnElement="Flow_w_commit_w_calendar"><di:waypoint x="2800" y="350" /><di:waypoint x="2840" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_calendar_w_notify_di" bpmnElement="Flow_w_calendar_w_notify"><di:waypoint x="2940" y="350" /><di:waypoint x="3012" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_w_notify_w_done_di" bpmnElement="Flow_w_notify_w_done"><di:waypoint x="3048" y="350" /><di:waypoint x="3100" y="350" /><di:waypoint x="3100" y="230" /><di:waypoint x="3152" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_coord_m_start_di" bpmnElement="Msg_coord_m_start"><di:waypoint x="230" y="520" /><di:waypoint x="230" y="612" /><bpmndi:BPMNLabel><dc:Bounds x="234" y="538" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_w_notify_m_upd_di" bpmnElement="Msg_w_notify_m_upd"><di:waypoint x="3030" y="368" /><di:waypoint x="3030" y="545" /><di:waypoint x="790" y="545" /><di:waypoint x="790" y="612" /><bpmndi:BPMNLabel><dc:Bounds x="3034" y="416" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_trainee_m_survey_di" bpmnElement="Msg_trainee_m_survey"><di:waypoint x="720" y="120" /><di:waypoint x="720" y="850" /><di:waypoint x="772" y="850" /><bpmndi:BPMNLabel><dc:Bounds x="724" y="138" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_act_m_act_di" bpmnElement="Msg_act_m_act"><di:waypoint x="790" y="1070" /><di:waypoint x="790" y="978" /><bpmndi:BPMNLabel><dc:Bounds x="794" y="1032" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_m_sendsum_w_start_di" bpmnElement="Msg_m_sendsum_w_start"><di:waypoint x="1210" y="722" /><di:waypoint x="1210" y="368" /><bpmndi:BPMNLabel><dc:Bounds x="1214" y="684" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_m_report_coord_di" bpmnElement="Msg_m_report_coord"><di:waypoint x="1350" y="832" /><di:waypoint x="1350" y="520" /><bpmndi:BPMNLabel><dc:Bounds x="1354" y="794" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_w_reqp_plan_di" bpmnElement="Msg_w_reqp_plan"><di:waypoint x="1490" y="368" /><di:waypoint x="1490" y="1180" /><bpmndi:BPMNLabel><dc:Bounds x="1494" y="416" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_plan_w_gotp_di" bpmnElement="Msg_plan_w_gotp"><di:waypoint x="1630" y="1180" /><di:waypoint x="1630" y="368" /><bpmndi:BPMNLabel><dc:Bounds x="1634" y="1142" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_w_summaryonly_trainee_di" bpmnElement="Msg_w_summaryonly_trainee"><di:waypoint x="1910" y="212" /><di:waypoint x="1910" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="1914" y="174" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_w_reqe_expl_di" bpmnElement="Msg_w_reqe_expl"><di:waypoint x="1910" y="368" /><di:waypoint x="1910" y="1290" /><bpmndi:BPMNLabel><dc:Bounds x="1914" y="416" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_expl_w_gote_di" bpmnElement="Msg_expl_w_gote"><di:waypoint x="2050" y="1290" /><di:waypoint x="2050" y="368" /><bpmndi:BPMNLabel><dc:Bounds x="2054" y="1252" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_w_present_trainee_di" bpmnElement="Msg_w_present_trainee"><di:waypoint x="2190" y="212" /><di:waypoint x="2190" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="2194" y="174" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_trainee_w_decision_di" bpmnElement="Msg_trainee_w_decision"><di:waypoint x="2330" y="120" /><di:waypoint x="2330" y="212" /><bpmndi:BPMNLabel><dc:Bounds x="2334" y="138" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_w_kept_trainee_di" bpmnElement="Msg_w_kept_trainee"><di:waypoint x="2610" y="442" /><di:waypoint x="2610" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="2614" y="404" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_w_calendar_cal_di" bpmnElement="Msg_w_calendar_cal"><di:waypoint x="2890" y="390" /><di:waypoint x="2890" y="1400" /><bpmndi:BPMNLabel><dc:Bounds x="2894" y="408" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_w_done_trainee_di" bpmnElement="Msg_w_done_trainee"><di:waypoint x="3170" y="212" /><di:waypoint x="3170" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="3174" y="174" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

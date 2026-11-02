@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Defs_adaptation" targetNamespace="http://bpmn.io/schema/bpmn" exporter="hand-written" exporterVersion="1.0">
+  <bpmn:collaboration id="Collab_adaptation" name="Process 2 - Plan adaptation after a change">
+    <bpmn:participant id="P_trainee" name="Trainee (web app)" />
+    <bpmn:participant id="P_coord" name="Coordinator agent" processRef="Proc_coord" />
+    <bpmn:participant id="P_know" name="Knowledge agent" />
+    <bpmn:participant id="P_plan" name="Planning agent" processRef="Proc_plan" />
+    <bpmn:participant id="P_cal" name="Calendar service" />
+    <bpmn:participant id="P_expl" name="Explanation agent" />
+    <bpmn:participant id="P_mon" name="Monitoring agent" />
+    <bpmn:messageFlow id="Msg_trainee_a_user" name="availability change / missed workout" sourceRef="P_trainee" targetRef="a_user" />
+    <bpmn:messageFlow id="Msg_mon_a_dev" name="significant deviation" sourceRef="P_mon" targetRef="a_dev" />
+    <bpmn:messageFlow id="Msg_a_reqk_know" name="research query" sourceRef="a_reqk" targetRef="P_know" />
+    <bpmn:messageFlow id="Msg_know_a_gotk" name="knowledge brief" sourceRef="P_know" targetRef="a_gotk" />
+    <bpmn:messageFlow id="Msg_a_reqp_p_start" name="change request" sourceRef="a_reqp" targetRef="p_start" />
+    <bpmn:messageFlow id="Msg_p_cal_cal" name="free/busy query" sourceRef="p_cal" targetRef="P_cal" />
+    <bpmn:messageFlow id="Msg_cal_p_cal" name="free/busy" sourceRef="P_cal" targetRef="p_cal" />
+    <bpmn:messageFlow id="Msg_p_end_a_gotp" name="proposal or empty reply" sourceRef="p_end" targetRef="a_gotp" />
+    <bpmn:messageFlow id="Msg_a_nochange_trainee" name="no change needed" sourceRef="a_nochange" targetRef="P_trainee" />
+    <bpmn:messageFlow id="Msg_a_reqe_expl" name="proposal" sourceRef="a_reqe" targetRef="P_expl" />
+    <bpmn:messageFlow id="Msg_expl_a_gote" name="explanation" sourceRef="P_expl" targetRef="a_gote" />
+    <bpmn:messageFlow id="Msg_a_present_trainee" name="proposal + explanation" sourceRef="a_present" targetRef="P_trainee" />
+    <bpmn:messageFlow id="Msg_trainee_a_decision" name="decision (+ reason)" sourceRef="P_trainee" targetRef="a_decision" />
+    <bpmn:messageFlow id="Msg_a_kept_trainee" name="plan kept" sourceRef="a_kept" targetRef="P_trainee" />
+    <bpmn:messageFlow id="Msg_a_calendar_cal" name="updated events" sourceRef="a_calendar" targetRef="P_cal" />
+    <bpmn:messageFlow id="Msg_a_notify_mon" name="plan updated" sourceRef="a_notify" targetRef="P_mon" />
+    <bpmn:messageFlow id="Msg_a_done_trainee" name="confirmation" sourceRef="a_done" targetRef="P_trainee" />
+  </bpmn:collaboration>
+  <bpmn:process id="Proc_coord" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_coord">
+      <bpmn:lane id="Lane_uh" name="UserHandler">
+        <bpmn:flowNodeRef>a_user</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_nochange</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_present</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_decision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_done</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_wm" name="WorkflowManager">
+        <bpmn:flowNodeRef>a_dev</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_covered</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_reqk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_gotk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_kmerge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_retry</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_reqp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_gotp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_hasprop</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_reqe</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_gote</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_accepted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_attempts</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_kept</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_commit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_calendar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>a_notify</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="a_user" name="Change reported"><bpmn:outgoing>Flow_a_user_a_merge</bpmn:outgoing><bpmn:messageEventDefinition id="a_user_md" /></bpmn:startEvent>
+    <bpmn:startEvent id="a_dev" name="Deviation reported"><bpmn:outgoing>Flow_a_dev_a_merge</bpmn:outgoing><bpmn:messageEventDefinition id="a_dev_md" /></bpmn:startEvent>
+    <bpmn:exclusiveGateway id="a_merge" name=""><bpmn:incoming>Flow_a_user_a_merge</bpmn:incoming><bpmn:incoming>Flow_a_dev_a_merge</bpmn:incoming><bpmn:outgoing>Flow_a_merge_a_covered</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="a_covered" name="Brief covers the change?"><bpmn:incoming>Flow_a_merge_a_covered</bpmn:incoming><bpmn:outgoing>Flow_a_covered_a_reqk</bpmn:outgoing><bpmn:outgoing>Flow_a_covered_a_kmerge</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:intermediateThrowEvent id="a_reqk" name="Request knowledge"><bpmn:incoming>Flow_a_covered_a_reqk</bpmn:incoming><bpmn:outgoing>Flow_a_reqk_a_gotk</bpmn:outgoing><bpmn:messageEventDefinition id="a_reqk_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="a_gotk" name="Brief received"><bpmn:incoming>Flow_a_reqk_a_gotk</bpmn:incoming><bpmn:outgoing>Flow_a_gotk_a_kmerge</bpmn:outgoing><bpmn:messageEventDefinition id="a_gotk_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="a_kmerge" name=""><bpmn:incoming>Flow_a_gotk_a_kmerge</bpmn:incoming><bpmn:incoming>Flow_a_covered_a_kmerge</bpmn:incoming><bpmn:outgoing>Flow_a_kmerge_a_retry</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="a_retry" name=""><bpmn:incoming>Flow_a_kmerge_a_retry</bpmn:incoming><bpmn:incoming>Flow_a_attempts_a_retry</bpmn:incoming><bpmn:outgoing>Flow_a_retry_a_reqp</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:intermediateThrowEvent id="a_reqp" name="Request plan change"><bpmn:incoming>Flow_a_retry_a_reqp</bpmn:incoming><bpmn:outgoing>Flow_a_reqp_a_gotp</bpmn:outgoing><bpmn:messageEventDefinition id="a_reqp_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="a_gotp" name="Reply received"><bpmn:incoming>Flow_a_reqp_a_gotp</bpmn:incoming><bpmn:outgoing>Flow_a_gotp_a_hasprop</bpmn:outgoing><bpmn:messageEventDefinition id="a_gotp_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="a_hasprop" name="Proposal?"><bpmn:incoming>Flow_a_gotp_a_hasprop</bpmn:incoming><bpmn:outgoing>Flow_a_hasprop_a_nochange</bpmn:outgoing><bpmn:outgoing>Flow_a_hasprop_a_reqe</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="a_nochange" name="Trainee told no change is needed"><bpmn:incoming>Flow_a_hasprop_a_nochange</bpmn:incoming><bpmn:messageEventDefinition id="a_nochange_md" /></bpmn:endEvent>
+    <bpmn:intermediateThrowEvent id="a_reqe" name="Request explanation"><bpmn:incoming>Flow_a_hasprop_a_reqe</bpmn:incoming><bpmn:outgoing>Flow_a_reqe_a_gote</bpmn:outgoing><bpmn:messageEventDefinition id="a_reqe_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="a_gote" name="Explanation received"><bpmn:incoming>Flow_a_reqe_a_gote</bpmn:incoming><bpmn:outgoing>Flow_a_gote_a_present</bpmn:outgoing><bpmn:messageEventDefinition id="a_gote_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:intermediateThrowEvent id="a_present" name="Present proposal"><bpmn:incoming>Flow_a_gote_a_present</bpmn:incoming><bpmn:outgoing>Flow_a_present_a_decision</bpmn:outgoing><bpmn:messageEventDefinition id="a_present_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="a_decision" name="Decision received"><bpmn:incoming>Flow_a_present_a_decision</bpmn:incoming><bpmn:outgoing>Flow_a_decision_a_accepted</bpmn:outgoing><bpmn:messageEventDefinition id="a_decision_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="a_accepted" name="Accepted?"><bpmn:incoming>Flow_a_decision_a_accepted</bpmn:incoming><bpmn:outgoing>Flow_a_accepted_a_commit</bpmn:outgoing><bpmn:outgoing>Flow_a_accepted_a_attempts</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="a_attempts" name="Attempts left?"><bpmn:incoming>Flow_a_accepted_a_attempts</bpmn:incoming><bpmn:outgoing>Flow_a_attempts_a_retry</bpmn:outgoing><bpmn:outgoing>Flow_a_attempts_a_kept</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="a_kept" name="Current plan kept, trainee told"><bpmn:incoming>Flow_a_attempts_a_kept</bpmn:incoming><bpmn:messageEventDefinition id="a_kept_md" /></bpmn:endEvent>
+    <bpmn:task id="a_commit" name="Save plan version"><bpmn:incoming>Flow_a_accepted_a_commit</bpmn:incoming><bpmn:outgoing>Flow_a_commit_a_calendar</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="a_calendar" name="Update calendar"><bpmn:incoming>Flow_a_commit_a_calendar</bpmn:incoming><bpmn:outgoing>Flow_a_calendar_a_notify</bpmn:outgoing></bpmn:task>
+    <bpmn:intermediateThrowEvent id="a_notify" name="Notify monitoring"><bpmn:incoming>Flow_a_calendar_a_notify</bpmn:incoming><bpmn:outgoing>Flow_a_notify_a_done</bpmn:outgoing><bpmn:messageEventDefinition id="a_notify_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:endEvent id="a_done" name="Change confirmed"><bpmn:incoming>Flow_a_notify_a_done</bpmn:incoming><bpmn:messageEventDefinition id="a_done_md" /></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_a_user_a_merge" sourceRef="a_user" targetRef="a_merge" />
+    <bpmn:sequenceFlow id="Flow_a_dev_a_merge" sourceRef="a_dev" targetRef="a_merge" />
+    <bpmn:sequenceFlow id="Flow_a_merge_a_covered" sourceRef="a_merge" targetRef="a_covered" />
+    <bpmn:sequenceFlow id="Flow_a_covered_a_reqk" name="no" sourceRef="a_covered" targetRef="a_reqk" />
+    <bpmn:sequenceFlow id="Flow_a_reqk_a_gotk" sourceRef="a_reqk" targetRef="a_gotk" />
+    <bpmn:sequenceFlow id="Flow_a_gotk_a_kmerge" sourceRef="a_gotk" targetRef="a_kmerge" />
+    <bpmn:sequenceFlow id="Flow_a_covered_a_kmerge" name="yes" sourceRef="a_covered" targetRef="a_kmerge" />
+    <bpmn:sequenceFlow id="Flow_a_kmerge_a_retry" sourceRef="a_kmerge" targetRef="a_retry" />
+    <bpmn:sequenceFlow id="Flow_a_retry_a_reqp" sourceRef="a_retry" targetRef="a_reqp" />
+    <bpmn:sequenceFlow id="Flow_a_reqp_a_gotp" sourceRef="a_reqp" targetRef="a_gotp" />
+    <bpmn:sequenceFlow id="Flow_a_gotp_a_hasprop" sourceRef="a_gotp" targetRef="a_hasprop" />
+    <bpmn:sequenceFlow id="Flow_a_hasprop_a_nochange" name="no" sourceRef="a_hasprop" targetRef="a_nochange" />
+    <bpmn:sequenceFlow id="Flow_a_hasprop_a_reqe" name="yes" sourceRef="a_hasprop" targetRef="a_reqe" />
+    <bpmn:sequenceFlow id="Flow_a_reqe_a_gote" sourceRef="a_reqe" targetRef="a_gote" />
+    <bpmn:sequenceFlow id="Flow_a_gote_a_present" sourceRef="a_gote" targetRef="a_present" />
+    <bpmn:sequenceFlow id="Flow_a_present_a_decision" sourceRef="a_present" targetRef="a_decision" />
+    <bpmn:sequenceFlow id="Flow_a_decision_a_accepted" sourceRef="a_decision" targetRef="a_accepted" />
+    <bpmn:sequenceFlow id="Flow_a_accepted_a_commit" name="yes" sourceRef="a_accepted" targetRef="a_commit" />
+    <bpmn:sequenceFlow id="Flow_a_accepted_a_attempts" name="no" sourceRef="a_accepted" targetRef="a_attempts" />
+    <bpmn:sequenceFlow id="Flow_a_attempts_a_retry" name="yes" sourceRef="a_attempts" targetRef="a_retry" />
+    <bpmn:sequenceFlow id="Flow_a_attempts_a_kept" name="no" sourceRef="a_attempts" targetRef="a_kept" />
+    <bpmn:sequenceFlow id="Flow_a_commit_a_calendar" sourceRef="a_commit" targetRef="a_calendar" />
+    <bpmn:sequenceFlow id="Flow_a_calendar_a_notify" sourceRef="a_calendar" targetRef="a_notify" />
+    <bpmn:sequenceFlow id="Flow_a_notify_a_done" sourceRef="a_notify" targetRef="a_done" />
+  </bpmn:process>
+  <bpmn:process id="Proc_plan" isExecutable="false">
+    <bpmn:startEvent id="p_start" name="Change request received"><bpmn:outgoing>Flow_p_start_p_impact</bpmn:outgoing><bpmn:messageEventDefinition id="p_start_md" /></bpmn:startEvent>
+    <bpmn:task id="p_impact" name="Assess impact on the plan"><bpmn:incoming>Flow_p_start_p_impact</bpmn:incoming><bpmn:outgoing>Flow_p_impact_p_needed</bpmn:outgoing></bpmn:task>
+    <bpmn:exclusiveGateway id="p_needed" name="Change needed?"><bpmn:incoming>Flow_p_impact_p_needed</bpmn:incoming><bpmn:outgoing>Flow_p_needed_p_cal</bpmn:outgoing><bpmn:outgoing>Flow_p_needed_p_merge</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:task id="p_cal" name="Read calendar availability"><bpmn:incoming>Flow_p_needed_p_cal</bpmn:incoming><bpmn:outgoing>Flow_p_cal_p_draft</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="p_draft" name="Draft modification"><bpmn:incoming>Flow_p_cal_p_draft</bpmn:incoming><bpmn:incoming>Flow_p_valid_p_draft</bpmn:incoming><bpmn:outgoing>Flow_p_draft_p_check</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="p_check" name="Check hard constraints"><bpmn:incoming>Flow_p_draft_p_check</bpmn:incoming><bpmn:outgoing>Flow_p_check_p_valid</bpmn:outgoing></bpmn:task>
+    <bpmn:exclusiveGateway id="p_valid" name="Valid?"><bpmn:incoming>Flow_p_check_p_valid</bpmn:incoming><bpmn:outgoing>Flow_p_valid_p_merge</bpmn:outgoing><bpmn:outgoing>Flow_p_valid_p_draft</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="p_merge" name=""><bpmn:incoming>Flow_p_needed_p_merge</bpmn:incoming><bpmn:incoming>Flow_p_valid_p_merge</bpmn:incoming><bpmn:outgoing>Flow_p_merge_p_end</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="p_end" name="Send reply"><bpmn:incoming>Flow_p_merge_p_end</bpmn:incoming><bpmn:messageEventDefinition id="p_end_md" /></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_p_start_p_impact" sourceRef="p_start" targetRef="p_impact" />
+    <bpmn:sequenceFlow id="Flow_p_impact_p_needed" sourceRef="p_impact" targetRef="p_needed" />
+    <bpmn:sequenceFlow id="Flow_p_cal_p_draft" sourceRef="p_cal" targetRef="p_draft" />
+    <bpmn:sequenceFlow id="Flow_p_draft_p_check" sourceRef="p_draft" targetRef="p_check" />
+    <bpmn:sequenceFlow id="Flow_p_check_p_valid" sourceRef="p_check" targetRef="p_valid" />
+    <bpmn:sequenceFlow id="Flow_p_merge_p_end" sourceRef="p_merge" targetRef="p_end" />
+    <bpmn:sequenceFlow id="Flow_p_needed_p_cal" name="yes" sourceRef="p_needed" targetRef="p_cal" />
+    <bpmn:sequenceFlow id="Flow_p_needed_p_merge" name="no (empty reply)" sourceRef="p_needed" targetRef="p_merge" />
+    <bpmn:sequenceFlow id="Flow_p_valid_p_merge" name="yes" sourceRef="p_valid" targetRef="p_merge" />
+    <bpmn:sequenceFlow id="Flow_p_valid_p_draft" name="no" sourceRef="p_valid" targetRef="p_draft" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_adaptation">
+    <bpmndi:BPMNPlane id="Plane_adaptation" bpmnElement="Collab_adaptation">
+      <bpmndi:BPMNShape id="P_trainee_di" bpmnElement="P_trainee" isHorizontal="true"><dc:Bounds x="100" y="60" width="3880" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_coord_di" bpmnElement="P_coord" isHorizontal="true"><dc:Bounds x="100" y="170" width="3880" height="350" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_uh_di" bpmnElement="Lane_uh" isHorizontal="true"><dc:Bounds x="130" y="170" width="3850" height="120" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_wm_di" bpmnElement="Lane_wm" isHorizontal="true"><dc:Bounds x="130" y="290" width="3850" height="230" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_know_di" bpmnElement="P_know" isHorizontal="true"><dc:Bounds x="100" y="570" width="3880" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_plan_di" bpmnElement="P_plan" isHorizontal="true"><dc:Bounds x="100" y="680" width="3880" height="230" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_cal_di" bpmnElement="P_cal" isHorizontal="true"><dc:Bounds x="100" y="960" width="3880" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_expl_di" bpmnElement="P_expl" isHorizontal="true"><dc:Bounds x="100" y="1070" width="3880" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_mon_di" bpmnElement="P_mon" isHorizontal="true"><dc:Bounds x="100" y="1180" width="3880" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_user_di" bpmnElement="a_user"><dc:Bounds x="212" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="175" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_dev_di" bpmnElement="a_dev"><dc:Bounds x="212" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="175" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_merge_di" bpmnElement="a_merge" isMarkerVisible="true"><dc:Bounds x="345" y="325" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_covered_di" bpmnElement="a_covered" isMarkerVisible="true"><dc:Bounds x="485" y="325" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="455" y="379" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_reqk_di" bpmnElement="a_reqk"><dc:Bounds x="632" y="442" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="595" y="482" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_gotk_di" bpmnElement="a_gotk"><dc:Bounds x="772" y="442" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="735" y="482" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_kmerge_di" bpmnElement="a_kmerge" isMarkerVisible="true"><dc:Bounds x="905" y="325" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_retry_di" bpmnElement="a_retry" isMarkerVisible="true"><dc:Bounds x="1045" y="325" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_reqp_di" bpmnElement="a_reqp"><dc:Bounds x="1192" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1155" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_gotp_di" bpmnElement="a_gotp"><dc:Bounds x="2312" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2275" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_hasprop_di" bpmnElement="a_hasprop" isMarkerVisible="true"><dc:Bounds x="2445" y="325" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="2415" y="379" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_nochange_di" bpmnElement="a_nochange"><dc:Bounds x="2592" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2555" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_reqe_di" bpmnElement="a_reqe"><dc:Bounds x="2592" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2555" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_gote_di" bpmnElement="a_gote"><dc:Bounds x="2732" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2695" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_present_di" bpmnElement="a_present"><dc:Bounds x="2872" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2835" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_decision_di" bpmnElement="a_decision"><dc:Bounds x="3012" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2975" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_accepted_di" bpmnElement="a_accepted" isMarkerVisible="true"><dc:Bounds x="3145" y="325" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="3115" y="379" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_attempts_di" bpmnElement="a_attempts" isMarkerVisible="true"><dc:Bounds x="3145" y="435" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="3115" y="489" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_kept_di" bpmnElement="a_kept"><dc:Bounds x="3292" y="442" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3255" y="482" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_commit_di" bpmnElement="a_commit"><dc:Bounds x="3400" y="310" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_calendar_di" bpmnElement="a_calendar"><dc:Bounds x="3540" y="310" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_notify_di" bpmnElement="a_notify"><dc:Bounds x="3712" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3675" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="a_done_di" bpmnElement="a_done"><dc:Bounds x="3852" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3815" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_start_di" bpmnElement="p_start"><dc:Bounds x="1192" y="722" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1155" y="762" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_impact_di" bpmnElement="p_impact"><dc:Bounds x="1300" y="700" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_needed_di" bpmnElement="p_needed" isMarkerVisible="true"><dc:Bounds x="1465" y="715" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="1435" y="769" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_cal_di" bpmnElement="p_cal"><dc:Bounds x="1580" y="700" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_draft_di" bpmnElement="p_draft"><dc:Bounds x="1720" y="700" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_check_di" bpmnElement="p_check"><dc:Bounds x="1860" y="700" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_valid_di" bpmnElement="p_valid" isMarkerVisible="true"><dc:Bounds x="2025" y="715" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="1995" y="769" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_merge_di" bpmnElement="p_merge" isMarkerVisible="true"><dc:Bounds x="2165" y="715" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_end_di" bpmnElement="p_end"><dc:Bounds x="2312" y="722" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2275" y="762" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_a_user_a_merge_di" bpmnElement="Flow_a_user_a_merge"><di:waypoint x="248" y="230" /><di:waypoint x="370" y="230" /><di:waypoint x="370" y="325" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_dev_a_merge_di" bpmnElement="Flow_a_dev_a_merge"><di:waypoint x="248" y="350" /><di:waypoint x="345" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_merge_a_covered_di" bpmnElement="Flow_a_merge_a_covered"><di:waypoint x="395" y="350" /><di:waypoint x="485" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_covered_a_reqk_di" bpmnElement="Flow_a_covered_a_reqk"><di:waypoint x="510" y="375" /><di:waypoint x="510" y="460" /><di:waypoint x="632" y="460" /><bpmndi:BPMNLabel><dc:Bounds x="514" y="408" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_reqk_a_gotk_di" bpmnElement="Flow_a_reqk_a_gotk"><di:waypoint x="668" y="460" /><di:waypoint x="772" y="460" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_gotk_a_kmerge_di" bpmnElement="Flow_a_gotk_a_kmerge"><di:waypoint x="808" y="460" /><di:waypoint x="930" y="460" /><di:waypoint x="930" y="375" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_covered_a_kmerge_di" bpmnElement="Flow_a_covered_a_kmerge"><di:waypoint x="535" y="350" /><di:waypoint x="905" y="350" /><bpmndi:BPMNLabel><dc:Bounds x="620" y="328" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_kmerge_a_retry_di" bpmnElement="Flow_a_kmerge_a_retry"><di:waypoint x="955" y="350" /><di:waypoint x="1045" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_retry_a_reqp_di" bpmnElement="Flow_a_retry_a_reqp"><di:waypoint x="1095" y="350" /><di:waypoint x="1192" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_reqp_a_gotp_di" bpmnElement="Flow_a_reqp_a_gotp"><di:waypoint x="1228" y="350" /><di:waypoint x="2312" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_gotp_a_hasprop_di" bpmnElement="Flow_a_gotp_a_hasprop"><di:waypoint x="2348" y="350" /><di:waypoint x="2445" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_hasprop_a_nochange_di" bpmnElement="Flow_a_hasprop_a_nochange"><di:waypoint x="2470" y="325" /><di:waypoint x="2470" y="230" /><di:waypoint x="2592" y="230" /><bpmndi:BPMNLabel><dc:Bounds x="2474" y="268" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_hasprop_a_reqe_di" bpmnElement="Flow_a_hasprop_a_reqe"><di:waypoint x="2495" y="350" /><di:waypoint x="2592" y="350" /><bpmndi:BPMNLabel><dc:Bounds x="2484" y="328" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_reqe_a_gote_di" bpmnElement="Flow_a_reqe_a_gote"><di:waypoint x="2628" y="350" /><di:waypoint x="2732" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_gote_a_present_di" bpmnElement="Flow_a_gote_a_present"><di:waypoint x="2768" y="350" /><di:waypoint x="2820" y="350" /><di:waypoint x="2820" y="230" /><di:waypoint x="2872" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_present_a_decision_di" bpmnElement="Flow_a_present_a_decision"><di:waypoint x="2908" y="230" /><di:waypoint x="3012" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_decision_a_accepted_di" bpmnElement="Flow_a_decision_a_accepted"><di:waypoint x="3048" y="230" /><di:waypoint x="3170" y="230" /><di:waypoint x="3170" y="325" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_accepted_a_commit_di" bpmnElement="Flow_a_accepted_a_commit"><di:waypoint x="3195" y="350" /><di:waypoint x="3400" y="350" /><bpmndi:BPMNLabel><dc:Bounds x="3222" y="328" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_accepted_a_attempts_di" bpmnElement="Flow_a_accepted_a_attempts"><di:waypoint x="3170" y="375" /><di:waypoint x="3170" y="435" /><bpmndi:BPMNLabel><dc:Bounds x="3174" y="395" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_attempts_a_retry_di" bpmnElement="Flow_a_attempts_a_retry"><di:waypoint x="3170" y="485" /><di:waypoint x="3170" y="500" /><di:waypoint x="1070" y="500" /><di:waypoint x="1070" y="375" /><bpmndi:BPMNLabel><dc:Bounds x="3070" y="478" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_attempts_a_kept_di" bpmnElement="Flow_a_attempts_a_kept"><di:waypoint x="3195" y="460" /><di:waypoint x="3292" y="460" /><bpmndi:BPMNLabel><dc:Bounds x="3184" y="438" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_commit_a_calendar_di" bpmnElement="Flow_a_commit_a_calendar"><di:waypoint x="3500" y="350" /><di:waypoint x="3540" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_calendar_a_notify_di" bpmnElement="Flow_a_calendar_a_notify"><di:waypoint x="3640" y="350" /><di:waypoint x="3712" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_a_notify_a_done_di" bpmnElement="Flow_a_notify_a_done"><di:waypoint x="3748" y="350" /><di:waypoint x="3800" y="350" /><di:waypoint x="3800" y="230" /><di:waypoint x="3852" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_start_p_impact_di" bpmnElement="Flow_p_start_p_impact"><di:waypoint x="1228" y="740" /><di:waypoint x="1300" y="740" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_impact_p_needed_di" bpmnElement="Flow_p_impact_p_needed"><di:waypoint x="1400" y="740" /><di:waypoint x="1465" y="740" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_cal_p_draft_di" bpmnElement="Flow_p_cal_p_draft"><di:waypoint x="1680" y="740" /><di:waypoint x="1720" y="740" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_draft_p_check_di" bpmnElement="Flow_p_draft_p_check"><di:waypoint x="1820" y="740" /><di:waypoint x="1860" y="740" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_check_p_valid_di" bpmnElement="Flow_p_check_p_valid"><di:waypoint x="1960" y="740" /><di:waypoint x="2025" y="740" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_merge_p_end_di" bpmnElement="Flow_p_merge_p_end"><di:waypoint x="2215" y="740" /><di:waypoint x="2312" y="740" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_needed_p_cal_di" bpmnElement="Flow_p_needed_p_cal"><di:waypoint x="1515" y="740" /><di:waypoint x="1580" y="740" /><bpmndi:BPMNLabel><dc:Bounds x="1493" y="718" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_needed_p_merge_di" bpmnElement="Flow_p_needed_p_merge"><di:waypoint x="1490" y="765" /><di:waypoint x="1490" y="835" /><di:waypoint x="2190" y="835" /><di:waypoint x="2190" y="765" /><bpmndi:BPMNLabel><dc:Bounds x="1500" y="813" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_valid_p_merge_di" bpmnElement="Flow_p_valid_p_merge"><di:waypoint x="2075" y="740" /><di:waypoint x="2165" y="740" /><bpmndi:BPMNLabel><dc:Bounds x="2062" y="718" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_valid_p_draft_di" bpmnElement="Flow_p_valid_p_draft"><di:waypoint x="2050" y="765" /><di:waypoint x="2050" y="780" /><di:waypoint x="1770" y="780" /><di:waypoint x="1770" y="780" /><bpmndi:BPMNLabel><dc:Bounds x="1950" y="758" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_trainee_a_user_di" bpmnElement="Msg_trainee_a_user"><di:waypoint x="230" y="120" /><di:waypoint x="230" y="212" /><bpmndi:BPMNLabel><dc:Bounds x="234" y="138" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_mon_a_dev_di" bpmnElement="Msg_mon_a_dev"><di:waypoint x="160" y="1180" /><di:waypoint x="160" y="350" /><di:waypoint x="212" y="350" /><bpmndi:BPMNLabel><dc:Bounds x="164" y="1142" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_a_reqk_know_di" bpmnElement="Msg_a_reqk_know"><di:waypoint x="650" y="478" /><di:waypoint x="650" y="570" /><bpmndi:BPMNLabel><dc:Bounds x="654" y="526" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_know_a_gotk_di" bpmnElement="Msg_know_a_gotk"><di:waypoint x="790" y="570" /><di:waypoint x="790" y="478" /><bpmndi:BPMNLabel><dc:Bounds x="794" y="532" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_a_reqp_p_start_di" bpmnElement="Msg_a_reqp_p_start"><di:waypoint x="1210" y="368" /><di:waypoint x="1210" y="722" /><bpmndi:BPMNLabel><dc:Bounds x="1214" y="416" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_p_cal_cal_di" bpmnElement="Msg_p_cal_cal"><di:waypoint x="1610" y="780" /><di:waypoint x="1610" y="960" /><bpmndi:BPMNLabel><dc:Bounds x="1516" y="798" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_cal_p_cal_di" bpmnElement="Msg_cal_p_cal"><di:waypoint x="1650" y="960" /><di:waypoint x="1650" y="780" /><bpmndi:BPMNLabel><dc:Bounds x="1654" y="922" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_p_end_a_gotp_di" bpmnElement="Msg_p_end_a_gotp"><di:waypoint x="2330" y="722" /><di:waypoint x="2330" y="368" /><bpmndi:BPMNLabel><dc:Bounds x="2334" y="684" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_a_nochange_trainee_di" bpmnElement="Msg_a_nochange_trainee"><di:waypoint x="2610" y="212" /><di:waypoint x="2610" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="2614" y="174" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_a_reqe_expl_di" bpmnElement="Msg_a_reqe_expl"><di:waypoint x="2610" y="368" /><di:waypoint x="2610" y="1070" /><bpmndi:BPMNLabel><dc:Bounds x="2614" y="416" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_expl_a_gote_di" bpmnElement="Msg_expl_a_gote"><di:waypoint x="2750" y="1070" /><di:waypoint x="2750" y="368" /><bpmndi:BPMNLabel><dc:Bounds x="2754" y="1032" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_a_present_trainee_di" bpmnElement="Msg_a_present_trainee"><di:waypoint x="2890" y="212" /><di:waypoint x="2890" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="2894" y="174" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_trainee_a_decision_di" bpmnElement="Msg_trainee_a_decision"><di:waypoint x="3030" y="120" /><di:waypoint x="3030" y="212" /><bpmndi:BPMNLabel><dc:Bounds x="3034" y="138" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_a_kept_trainee_di" bpmnElement="Msg_a_kept_trainee"><di:waypoint x="3310" y="442" /><di:waypoint x="3310" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="3314" y="404" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_a_calendar_cal_di" bpmnElement="Msg_a_calendar_cal"><di:waypoint x="3590" y="390" /><di:waypoint x="3590" y="960" /><bpmndi:BPMNLabel><dc:Bounds x="3594" y="408" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_a_notify_mon_di" bpmnElement="Msg_a_notify_mon"><di:waypoint x="3730" y="368" /><di:waypoint x="3730" y="1180" /><bpmndi:BPMNLabel><dc:Bounds x="3734" y="416" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_a_done_trainee_di" bpmnElement="Msg_a_done_trainee"><di:waypoint x="3870" y="212" /><di:waypoint x="3870" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="3874" y="174" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

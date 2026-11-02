@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Defs_onboarding" targetNamespace="http://bpmn.io/schema/bpmn" exporter="hand-written" exporterVersion="1.0">
+  <bpmn:collaboration id="Collab_onboarding" name="Process 1 - Onboarding and initial plan">
+    <bpmn:participant id="P_trainee" name="Trainee (web app)" />
+    <bpmn:participant id="P_coord" name="Coordinator agent" processRef="Proc_coord" />
+    <bpmn:participant id="P_know" name="Knowledge agent" processRef="Proc_know" />
+    <bpmn:participant id="P_web" name="Web search" />
+    <bpmn:participant id="P_plan" name="Planning agent" processRef="Proc_plan" />
+    <bpmn:participant id="P_cal" name="Calendar service" />
+    <bpmn:participant id="P_expl" name="Explanation agent" processRef="Proc_expl" />
+    <bpmn:participant id="P_mon" name="Monitoring agent" />
+    <bpmn:messageFlow id="Msg_trainee_o_start" name="profile" sourceRef="P_trainee" targetRef="o_start" />
+    <bpmn:messageFlow id="Msg_o_ask_trainee" name="questions" sourceRef="o_ask" targetRef="P_trainee" />
+    <bpmn:messageFlow id="Msg_trainee_o_answers" name="answers" sourceRef="P_trainee" targetRef="o_answers" />
+    <bpmn:messageFlow id="Msg_o_reqk_k_start" name="research query" sourceRef="o_reqk" targetRef="k_start" />
+    <bpmn:messageFlow id="Msg_k_search_web" name="search query" sourceRef="k_search" targetRef="P_web" />
+    <bpmn:messageFlow id="Msg_web_k_search" name="results" sourceRef="P_web" targetRef="k_search" />
+    <bpmn:messageFlow id="Msg_k_end_o_gotk" name="knowledge brief" sourceRef="k_end" targetRef="o_gotk" />
+    <bpmn:messageFlow id="Msg_o_reqp_p_start" name="plan request" sourceRef="o_reqp" targetRef="p_start" />
+    <bpmn:messageFlow id="Msg_p_cal_cal" name="free/busy query" sourceRef="p_cal" targetRef="P_cal" />
+    <bpmn:messageFlow id="Msg_cal_p_cal" name="free/busy" sourceRef="P_cal" targetRef="p_cal" />
+    <bpmn:messageFlow id="Msg_p_end_o_gotp" name="proposal" sourceRef="p_end" targetRef="o_gotp" />
+    <bpmn:messageFlow id="Msg_o_reqe_e_start" name="proposal" sourceRef="o_reqe" targetRef="e_start" />
+    <bpmn:messageFlow id="Msg_e_end_o_gote" name="explanation" sourceRef="e_end" targetRef="o_gote" />
+    <bpmn:messageFlow id="Msg_o_present_trainee" name="proposal + explanation" sourceRef="o_present" targetRef="P_trainee" />
+    <bpmn:messageFlow id="Msg_trainee_o_decision" name="decision (+ reason)" sourceRef="P_trainee" targetRef="o_decision" />
+    <bpmn:messageFlow id="Msg_o_noplan_trainee" name="no plan saved" sourceRef="o_noplan" targetRef="P_trainee" />
+    <bpmn:messageFlow id="Msg_o_calendar_cal" name="workout events" sourceRef="o_calendar" targetRef="P_cal" />
+    <bpmn:messageFlow id="Msg_o_startmon_mon" name="accepted plan" sourceRef="o_startmon" targetRef="P_mon" />
+    <bpmn:messageFlow id="Msg_o_done_trainee" name="confirmation" sourceRef="o_done" targetRef="P_trainee" />
+  </bpmn:collaboration>
+  <bpmn:process id="Proc_coord" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_coord">
+      <bpmn:lane id="Lane_uh" name="UserHandler">
+        <bpmn:flowNodeRef>o_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_save</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_ask</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_answers</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_update</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_present</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_decision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_done</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_wm" name="WorkflowManager">
+        <bpmn:flowNodeRef>o_reqk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_gotk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_retry</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_reqp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_gotp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_reqe</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_gote</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_accepted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_attempts</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_noplan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_commit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_calendar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_startmon</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_pm" name="ProfileManager">
+        <bpmn:flowNodeRef>o_assess</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_complete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>o_questions</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="o_start" name="Onboarding form received"><bpmn:outgoing>Flow_o_start_o_save</bpmn:outgoing><bpmn:messageEventDefinition id="o_start_md" /></bpmn:startEvent>
+    <bpmn:task id="o_save" name="Save profile draft"><bpmn:incoming>Flow_o_start_o_save</bpmn:incoming><bpmn:outgoing>Flow_o_save_o_assess</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="o_assess" name="Assess profile"><bpmn:incoming>Flow_o_save_o_assess</bpmn:incoming><bpmn:incoming>Flow_o_update_o_assess</bpmn:incoming><bpmn:outgoing>Flow_o_assess_o_complete</bpmn:outgoing></bpmn:task>
+    <bpmn:exclusiveGateway id="o_complete" name="Profile complete?"><bpmn:incoming>Flow_o_assess_o_complete</bpmn:incoming><bpmn:outgoing>Flow_o_complete_o_questions</bpmn:outgoing><bpmn:outgoing>Flow_o_complete_o_reqk</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:task id="o_questions" name="Draft clarifying questions"><bpmn:incoming>Flow_o_complete_o_questions</bpmn:incoming><bpmn:outgoing>Flow_o_questions_o_ask</bpmn:outgoing></bpmn:task>
+    <bpmn:intermediateThrowEvent id="o_ask" name="Send questions"><bpmn:incoming>Flow_o_questions_o_ask</bpmn:incoming><bpmn:outgoing>Flow_o_ask_o_answers</bpmn:outgoing><bpmn:messageEventDefinition id="o_ask_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="o_answers" name="Answers received"><bpmn:incoming>Flow_o_ask_o_answers</bpmn:incoming><bpmn:outgoing>Flow_o_answers_o_update</bpmn:outgoing><bpmn:messageEventDefinition id="o_answers_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:task id="o_update" name="Update profile"><bpmn:incoming>Flow_o_answers_o_update</bpmn:incoming><bpmn:outgoing>Flow_o_update_o_assess</bpmn:outgoing></bpmn:task>
+    <bpmn:intermediateThrowEvent id="o_reqk" name="Request knowledge"><bpmn:incoming>Flow_o_complete_o_reqk</bpmn:incoming><bpmn:outgoing>Flow_o_reqk_o_gotk</bpmn:outgoing><bpmn:messageEventDefinition id="o_reqk_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="o_gotk" name="Brief received"><bpmn:incoming>Flow_o_reqk_o_gotk</bpmn:incoming><bpmn:outgoing>Flow_o_gotk_o_retry</bpmn:outgoing><bpmn:messageEventDefinition id="o_gotk_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="o_retry" name=""><bpmn:incoming>Flow_o_gotk_o_retry</bpmn:incoming><bpmn:incoming>Flow_o_attempts_o_retry</bpmn:incoming><bpmn:outgoing>Flow_o_retry_o_reqp</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:intermediateThrowEvent id="o_reqp" name="Request plan"><bpmn:incoming>Flow_o_retry_o_reqp</bpmn:incoming><bpmn:outgoing>Flow_o_reqp_o_gotp</bpmn:outgoing><bpmn:messageEventDefinition id="o_reqp_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="o_gotp" name="Proposal received"><bpmn:incoming>Flow_o_reqp_o_gotp</bpmn:incoming><bpmn:outgoing>Flow_o_gotp_o_reqe</bpmn:outgoing><bpmn:messageEventDefinition id="o_gotp_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:intermediateThrowEvent id="o_reqe" name="Request explanation"><bpmn:incoming>Flow_o_gotp_o_reqe</bpmn:incoming><bpmn:outgoing>Flow_o_reqe_o_gote</bpmn:outgoing><bpmn:messageEventDefinition id="o_reqe_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="o_gote" name="Explanation received"><bpmn:incoming>Flow_o_reqe_o_gote</bpmn:incoming><bpmn:outgoing>Flow_o_gote_o_present</bpmn:outgoing><bpmn:messageEventDefinition id="o_gote_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:intermediateThrowEvent id="o_present" name="Present proposal"><bpmn:incoming>Flow_o_gote_o_present</bpmn:incoming><bpmn:outgoing>Flow_o_present_o_decision</bpmn:outgoing><bpmn:messageEventDefinition id="o_present_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="o_decision" name="Decision received"><bpmn:incoming>Flow_o_present_o_decision</bpmn:incoming><bpmn:outgoing>Flow_o_decision_o_accepted</bpmn:outgoing><bpmn:messageEventDefinition id="o_decision_md" /></bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="o_accepted" name="Accepted?"><bpmn:incoming>Flow_o_decision_o_accepted</bpmn:incoming><bpmn:outgoing>Flow_o_accepted_o_commit</bpmn:outgoing><bpmn:outgoing>Flow_o_accepted_o_attempts</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="o_attempts" name="Attempts left?"><bpmn:incoming>Flow_o_accepted_o_attempts</bpmn:incoming><bpmn:outgoing>Flow_o_attempts_o_retry</bpmn:outgoing><bpmn:outgoing>Flow_o_attempts_o_noplan</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="o_noplan" name="Trainee told no plan was saved"><bpmn:incoming>Flow_o_attempts_o_noplan</bpmn:incoming><bpmn:messageEventDefinition id="o_noplan_md" /></bpmn:endEvent>
+    <bpmn:task id="o_commit" name="Save plan version"><bpmn:incoming>Flow_o_accepted_o_commit</bpmn:incoming><bpmn:outgoing>Flow_o_commit_o_calendar</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="o_calendar" name="Write workouts to calendar"><bpmn:incoming>Flow_o_commit_o_calendar</bpmn:incoming><bpmn:outgoing>Flow_o_calendar_o_startmon</bpmn:outgoing></bpmn:task>
+    <bpmn:intermediateThrowEvent id="o_startmon" name="Start monitoring"><bpmn:incoming>Flow_o_calendar_o_startmon</bpmn:incoming><bpmn:outgoing>Flow_o_startmon_o_done</bpmn:outgoing><bpmn:messageEventDefinition id="o_startmon_md" /></bpmn:intermediateThrowEvent>
+    <bpmn:endEvent id="o_done" name="Plan confirmed"><bpmn:incoming>Flow_o_startmon_o_done</bpmn:incoming><bpmn:messageEventDefinition id="o_done_md" /></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_o_start_o_save" sourceRef="o_start" targetRef="o_save" />
+    <bpmn:sequenceFlow id="Flow_o_save_o_assess" sourceRef="o_save" targetRef="o_assess" />
+    <bpmn:sequenceFlow id="Flow_o_assess_o_complete" sourceRef="o_assess" targetRef="o_complete" />
+    <bpmn:sequenceFlow id="Flow_o_complete_o_questions" name="no" sourceRef="o_complete" targetRef="o_questions" />
+    <bpmn:sequenceFlow id="Flow_o_questions_o_ask" sourceRef="o_questions" targetRef="o_ask" />
+    <bpmn:sequenceFlow id="Flow_o_ask_o_answers" sourceRef="o_ask" targetRef="o_answers" />
+    <bpmn:sequenceFlow id="Flow_o_answers_o_update" sourceRef="o_answers" targetRef="o_update" />
+    <bpmn:sequenceFlow id="Flow_o_update_o_assess" sourceRef="o_update" targetRef="o_assess" />
+    <bpmn:sequenceFlow id="Flow_o_complete_o_reqk" name="yes" sourceRef="o_complete" targetRef="o_reqk" />
+    <bpmn:sequenceFlow id="Flow_o_reqk_o_gotk" sourceRef="o_reqk" targetRef="o_gotk" />
+    <bpmn:sequenceFlow id="Flow_o_gotk_o_retry" sourceRef="o_gotk" targetRef="o_retry" />
+    <bpmn:sequenceFlow id="Flow_o_retry_o_reqp" sourceRef="o_retry" targetRef="o_reqp" />
+    <bpmn:sequenceFlow id="Flow_o_reqp_o_gotp" sourceRef="o_reqp" targetRef="o_gotp" />
+    <bpmn:sequenceFlow id="Flow_o_gotp_o_reqe" sourceRef="o_gotp" targetRef="o_reqe" />
+    <bpmn:sequenceFlow id="Flow_o_reqe_o_gote" sourceRef="o_reqe" targetRef="o_gote" />
+    <bpmn:sequenceFlow id="Flow_o_gote_o_present" sourceRef="o_gote" targetRef="o_present" />
+    <bpmn:sequenceFlow id="Flow_o_present_o_decision" sourceRef="o_present" targetRef="o_decision" />
+    <bpmn:sequenceFlow id="Flow_o_decision_o_accepted" sourceRef="o_decision" targetRef="o_accepted" />
+    <bpmn:sequenceFlow id="Flow_o_accepted_o_commit" name="yes" sourceRef="o_accepted" targetRef="o_commit" />
+    <bpmn:sequenceFlow id="Flow_o_accepted_o_attempts" name="no" sourceRef="o_accepted" targetRef="o_attempts" />
+    <bpmn:sequenceFlow id="Flow_o_attempts_o_retry" name="yes" sourceRef="o_attempts" targetRef="o_retry" />
+    <bpmn:sequenceFlow id="Flow_o_attempts_o_noplan" name="no" sourceRef="o_attempts" targetRef="o_noplan" />
+    <bpmn:sequenceFlow id="Flow_o_commit_o_calendar" sourceRef="o_commit" targetRef="o_calendar" />
+    <bpmn:sequenceFlow id="Flow_o_calendar_o_startmon" sourceRef="o_calendar" targetRef="o_startmon" />
+    <bpmn:sequenceFlow id="Flow_o_startmon_o_done" sourceRef="o_startmon" targetRef="o_done" />
+  </bpmn:process>
+  <bpmn:process id="Proc_know" isExecutable="false">
+    <bpmn:startEvent id="k_start" name="Research query received"><bpmn:outgoing>Flow_k_start_k_search</bpmn:outgoing><bpmn:messageEventDefinition id="k_start_md" /></bpmn:startEvent>
+    <bpmn:task id="k_search" name="Search the web"><bpmn:incoming>Flow_k_start_k_search</bpmn:incoming><bpmn:outgoing>Flow_k_search_k_rate</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="k_rate" name="Rate source credibility"><bpmn:incoming>Flow_k_search_k_rate</bpmn:incoming><bpmn:outgoing>Flow_k_rate_k_brief</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="k_brief" name="Compile brief with references"><bpmn:incoming>Flow_k_rate_k_brief</bpmn:incoming><bpmn:outgoing>Flow_k_brief_k_end</bpmn:outgoing></bpmn:task>
+    <bpmn:endEvent id="k_end" name="Send brief"><bpmn:incoming>Flow_k_brief_k_end</bpmn:incoming><bpmn:messageEventDefinition id="k_end_md" /></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_k_start_k_search" sourceRef="k_start" targetRef="k_search" />
+    <bpmn:sequenceFlow id="Flow_k_search_k_rate" sourceRef="k_search" targetRef="k_rate" />
+    <bpmn:sequenceFlow id="Flow_k_rate_k_brief" sourceRef="k_rate" targetRef="k_brief" />
+    <bpmn:sequenceFlow id="Flow_k_brief_k_end" sourceRef="k_brief" targetRef="k_end" />
+  </bpmn:process>
+  <bpmn:process id="Proc_plan" isExecutable="false">
+    <bpmn:startEvent id="p_start" name="Plan request received"><bpmn:outgoing>Flow_p_start_p_cal</bpmn:outgoing><bpmn:messageEventDefinition id="p_start_md" /></bpmn:startEvent>
+    <bpmn:task id="p_cal" name="Read calendar availability"><bpmn:incoming>Flow_p_start_p_cal</bpmn:incoming><bpmn:outgoing>Flow_p_cal_p_draft</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="p_draft" name="Draft plan up to target date"><bpmn:incoming>Flow_p_cal_p_draft</bpmn:incoming><bpmn:incoming>Flow_p_valid_p_draft</bpmn:incoming><bpmn:outgoing>Flow_p_draft_p_check</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="p_check" name="Check hard constraints"><bpmn:incoming>Flow_p_draft_p_check</bpmn:incoming><bpmn:outgoing>Flow_p_check_p_valid</bpmn:outgoing></bpmn:task>
+    <bpmn:exclusiveGateway id="p_valid" name="Valid?"><bpmn:incoming>Flow_p_check_p_valid</bpmn:incoming><bpmn:outgoing>Flow_p_valid_p_end</bpmn:outgoing><bpmn:outgoing>Flow_p_valid_p_draft</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:endEvent id="p_end" name="Send proposal"><bpmn:incoming>Flow_p_valid_p_end</bpmn:incoming><bpmn:messageEventDefinition id="p_end_md" /></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_p_start_p_cal" sourceRef="p_start" targetRef="p_cal" />
+    <bpmn:sequenceFlow id="Flow_p_cal_p_draft" sourceRef="p_cal" targetRef="p_draft" />
+    <bpmn:sequenceFlow id="Flow_p_draft_p_check" sourceRef="p_draft" targetRef="p_check" />
+    <bpmn:sequenceFlow id="Flow_p_check_p_valid" sourceRef="p_check" targetRef="p_valid" />
+    <bpmn:sequenceFlow id="Flow_p_valid_p_end" name="yes" sourceRef="p_valid" targetRef="p_end" />
+    <bpmn:sequenceFlow id="Flow_p_valid_p_draft" name="no" sourceRef="p_valid" targetRef="p_draft" />
+  </bpmn:process>
+  <bpmn:process id="Proc_expl" isExecutable="false">
+    <bpmn:startEvent id="e_start" name="Explanation request received"><bpmn:outgoing>Flow_e_start_e_write</bpmn:outgoing><bpmn:messageEventDefinition id="e_start_md" /></bpmn:startEvent>
+    <bpmn:task id="e_write" name="Write explanation with sources"><bpmn:incoming>Flow_e_start_e_write</bpmn:incoming><bpmn:outgoing>Flow_e_write_e_end</bpmn:outgoing></bpmn:task>
+    <bpmn:endEvent id="e_end" name="Send explanation"><bpmn:incoming>Flow_e_write_e_end</bpmn:incoming><bpmn:messageEventDefinition id="e_end_md" /></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_e_start_e_write" sourceRef="e_start" targetRef="e_write" />
+    <bpmn:sequenceFlow id="Flow_e_write_e_end" sourceRef="e_write" targetRef="e_end" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_onboarding">
+    <bpmndi:BPMNPlane id="Plane_onboarding" bpmnElement="Collab_onboarding">
+      <bpmndi:BPMNShape id="P_trainee_di" bpmnElement="P_trainee" isHorizontal="true"><dc:Bounds x="100" y="60" width="4440" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_coord_di" bpmnElement="P_coord" isHorizontal="true"><dc:Bounds x="100" y="170" width="4440" height="470" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_uh_di" bpmnElement="Lane_uh" isHorizontal="true"><dc:Bounds x="130" y="170" width="4410" height="120" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_wm_di" bpmnElement="Lane_wm" isHorizontal="true"><dc:Bounds x="130" y="290" width="4410" height="230" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_pm_di" bpmnElement="Lane_pm" isHorizontal="true"><dc:Bounds x="130" y="520" width="4410" height="120" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_know_di" bpmnElement="P_know" isHorizontal="true"><dc:Bounds x="100" y="690" width="4440" height="120" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_web_di" bpmnElement="P_web" isHorizontal="true"><dc:Bounds x="100" y="860" width="4440" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_plan_di" bpmnElement="P_plan" isHorizontal="true"><dc:Bounds x="100" y="970" width="4440" height="120" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_cal_di" bpmnElement="P_cal" isHorizontal="true"><dc:Bounds x="100" y="1140" width="4440" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_expl_di" bpmnElement="P_expl" isHorizontal="true"><dc:Bounds x="100" y="1250" width="4440" height="120" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="P_mon_di" bpmnElement="P_mon" isHorizontal="true"><dc:Bounds x="100" y="1420" width="4440" height="60" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_start_di" bpmnElement="o_start"><dc:Bounds x="212" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="175" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_save_di" bpmnElement="o_save"><dc:Bounds x="320" y="190" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_assess_di" bpmnElement="o_assess"><dc:Bounds x="460" y="540" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_complete_di" bpmnElement="o_complete" isMarkerVisible="true"><dc:Bounds x="625" y="555" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="595" y="609" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_questions_di" bpmnElement="o_questions"><dc:Bounds x="740" y="540" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_ask_di" bpmnElement="o_ask"><dc:Bounds x="912" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="875" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_answers_di" bpmnElement="o_answers"><dc:Bounds x="1052" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1015" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_update_di" bpmnElement="o_update"><dc:Bounds x="1160" y="190" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_reqk_di" bpmnElement="o_reqk"><dc:Bounds x="1332" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1295" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_gotk_di" bpmnElement="o_gotk"><dc:Bounds x="1892" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1855" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_retry_di" bpmnElement="o_retry" isMarkerVisible="true"><dc:Bounds x="2025" y="325" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_reqp_di" bpmnElement="o_reqp"><dc:Bounds x="2172" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2135" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_gotp_di" bpmnElement="o_gotp"><dc:Bounds x="2872" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2835" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_reqe_di" bpmnElement="o_reqe"><dc:Bounds x="3012" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2975" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_gote_di" bpmnElement="o_gote"><dc:Bounds x="3292" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3255" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_present_di" bpmnElement="o_present"><dc:Bounds x="3432" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3395" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_decision_di" bpmnElement="o_decision"><dc:Bounds x="3572" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3535" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_accepted_di" bpmnElement="o_accepted" isMarkerVisible="true"><dc:Bounds x="3705" y="325" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="3675" y="379" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_attempts_di" bpmnElement="o_attempts" isMarkerVisible="true"><dc:Bounds x="3705" y="435" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="3675" y="489" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_noplan_di" bpmnElement="o_noplan"><dc:Bounds x="3852" y="442" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3815" y="482" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_commit_di" bpmnElement="o_commit"><dc:Bounds x="3960" y="310" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_calendar_di" bpmnElement="o_calendar"><dc:Bounds x="4100" y="310" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_startmon_di" bpmnElement="o_startmon"><dc:Bounds x="4272" y="332" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="4235" y="372" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="o_done_di" bpmnElement="o_done"><dc:Bounds x="4412" y="212" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="4375" y="252" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="k_start_di" bpmnElement="k_start"><dc:Bounds x="1332" y="732" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1295" y="772" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="k_search_di" bpmnElement="k_search"><dc:Bounds x="1440" y="710" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="k_rate_di" bpmnElement="k_rate"><dc:Bounds x="1580" y="710" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="k_brief_di" bpmnElement="k_brief"><dc:Bounds x="1720" y="710" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="k_end_di" bpmnElement="k_end"><dc:Bounds x="1892" y="732" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1855" y="772" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_start_di" bpmnElement="p_start"><dc:Bounds x="2172" y="1012" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2135" y="1052" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_cal_di" bpmnElement="p_cal"><dc:Bounds x="2280" y="990" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_draft_di" bpmnElement="p_draft"><dc:Bounds x="2420" y="990" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_check_di" bpmnElement="p_check"><dc:Bounds x="2560" y="990" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_valid_di" bpmnElement="p_valid" isMarkerVisible="true"><dc:Bounds x="2725" y="1005" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="2695" y="1059" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="p_end_di" bpmnElement="p_end"><dc:Bounds x="2872" y="1012" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2835" y="1052" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="e_start_di" bpmnElement="e_start"><dc:Bounds x="3012" y="1292" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2975" y="1332" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="e_write_di" bpmnElement="e_write"><dc:Bounds x="3120" y="1270" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="e_end_di" bpmnElement="e_end"><dc:Bounds x="3292" y="1292" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3255" y="1332" width="110" height="40" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_o_start_o_save_di" bpmnElement="Flow_o_start_o_save"><di:waypoint x="248" y="230" /><di:waypoint x="320" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_save_o_assess_di" bpmnElement="Flow_o_save_o_assess"><di:waypoint x="420" y="230" /><di:waypoint x="440" y="230" /><di:waypoint x="440" y="580" /><di:waypoint x="460" y="580" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_assess_o_complete_di" bpmnElement="Flow_o_assess_o_complete"><di:waypoint x="560" y="580" /><di:waypoint x="625" y="580" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_complete_o_questions_di" bpmnElement="Flow_o_complete_o_questions"><di:waypoint x="675" y="580" /><di:waypoint x="740" y="580" /><bpmndi:BPMNLabel><dc:Bounds x="653" y="558" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_questions_o_ask_di" bpmnElement="Flow_o_questions_o_ask"><di:waypoint x="840" y="580" /><di:waypoint x="876" y="580" /><di:waypoint x="876" y="230" /><di:waypoint x="912" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_ask_o_answers_di" bpmnElement="Flow_o_ask_o_answers"><di:waypoint x="948" y="230" /><di:waypoint x="1052" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_answers_o_update_di" bpmnElement="Flow_o_answers_o_update"><di:waypoint x="1088" y="230" /><di:waypoint x="1160" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_update_o_assess_di" bpmnElement="Flow_o_update_o_assess"><di:waypoint x="1210" y="190" /><di:waypoint x="1210" y="180" /><di:waypoint x="510" y="180" /><di:waypoint x="510" y="540" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_complete_o_reqk_di" bpmnElement="Flow_o_complete_o_reqk"><di:waypoint x="650" y="555" /><di:waypoint x="650" y="350" /><di:waypoint x="1332" y="350" /><bpmndi:BPMNLabel><dc:Bounds x="654" y="442" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_reqk_o_gotk_di" bpmnElement="Flow_o_reqk_o_gotk"><di:waypoint x="1368" y="350" /><di:waypoint x="1892" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_gotk_o_retry_di" bpmnElement="Flow_o_gotk_o_retry"><di:waypoint x="1928" y="350" /><di:waypoint x="2025" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_retry_o_reqp_di" bpmnElement="Flow_o_retry_o_reqp"><di:waypoint x="2075" y="350" /><di:waypoint x="2172" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_reqp_o_gotp_di" bpmnElement="Flow_o_reqp_o_gotp"><di:waypoint x="2208" y="350" /><di:waypoint x="2872" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_gotp_o_reqe_di" bpmnElement="Flow_o_gotp_o_reqe"><di:waypoint x="2908" y="350" /><di:waypoint x="3012" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_reqe_o_gote_di" bpmnElement="Flow_o_reqe_o_gote"><di:waypoint x="3048" y="350" /><di:waypoint x="3292" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_gote_o_present_di" bpmnElement="Flow_o_gote_o_present"><di:waypoint x="3328" y="350" /><di:waypoint x="3380" y="350" /><di:waypoint x="3380" y="230" /><di:waypoint x="3432" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_present_o_decision_di" bpmnElement="Flow_o_present_o_decision"><di:waypoint x="3468" y="230" /><di:waypoint x="3572" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_decision_o_accepted_di" bpmnElement="Flow_o_decision_o_accepted"><di:waypoint x="3608" y="230" /><di:waypoint x="3730" y="230" /><di:waypoint x="3730" y="325" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_accepted_o_commit_di" bpmnElement="Flow_o_accepted_o_commit"><di:waypoint x="3755" y="350" /><di:waypoint x="3960" y="350" /><bpmndi:BPMNLabel><dc:Bounds x="3782" y="328" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_accepted_o_attempts_di" bpmnElement="Flow_o_accepted_o_attempts"><di:waypoint x="3730" y="375" /><di:waypoint x="3730" y="435" /><bpmndi:BPMNLabel><dc:Bounds x="3734" y="395" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_attempts_o_retry_di" bpmnElement="Flow_o_attempts_o_retry"><di:waypoint x="3730" y="485" /><di:waypoint x="3730" y="500" /><di:waypoint x="2050" y="500" /><di:waypoint x="2050" y="375" /><bpmndi:BPMNLabel><dc:Bounds x="3630" y="478" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_attempts_o_noplan_di" bpmnElement="Flow_o_attempts_o_noplan"><di:waypoint x="3755" y="460" /><di:waypoint x="3852" y="460" /><bpmndi:BPMNLabel><dc:Bounds x="3744" y="438" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_commit_o_calendar_di" bpmnElement="Flow_o_commit_o_calendar"><di:waypoint x="4060" y="350" /><di:waypoint x="4100" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_calendar_o_startmon_di" bpmnElement="Flow_o_calendar_o_startmon"><di:waypoint x="4200" y="350" /><di:waypoint x="4272" y="350" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_o_startmon_o_done_di" bpmnElement="Flow_o_startmon_o_done"><di:waypoint x="4308" y="350" /><di:waypoint x="4360" y="350" /><di:waypoint x="4360" y="230" /><di:waypoint x="4412" y="230" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_k_start_k_search_di" bpmnElement="Flow_k_start_k_search"><di:waypoint x="1368" y="750" /><di:waypoint x="1440" y="750" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_k_search_k_rate_di" bpmnElement="Flow_k_search_k_rate"><di:waypoint x="1540" y="750" /><di:waypoint x="1580" y="750" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_k_rate_k_brief_di" bpmnElement="Flow_k_rate_k_brief"><di:waypoint x="1680" y="750" /><di:waypoint x="1720" y="750" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_k_brief_k_end_di" bpmnElement="Flow_k_brief_k_end"><di:waypoint x="1820" y="750" /><di:waypoint x="1892" y="750" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_start_p_cal_di" bpmnElement="Flow_p_start_p_cal"><di:waypoint x="2208" y="1030" /><di:waypoint x="2280" y="1030" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_cal_p_draft_di" bpmnElement="Flow_p_cal_p_draft"><di:waypoint x="2380" y="1030" /><di:waypoint x="2420" y="1030" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_draft_p_check_di" bpmnElement="Flow_p_draft_p_check"><di:waypoint x="2520" y="1030" /><di:waypoint x="2560" y="1030" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_check_p_valid_di" bpmnElement="Flow_p_check_p_valid"><di:waypoint x="2660" y="1030" /><di:waypoint x="2725" y="1030" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_valid_p_end_di" bpmnElement="Flow_p_valid_p_end"><di:waypoint x="2775" y="1030" /><di:waypoint x="2872" y="1030" /><bpmndi:BPMNLabel><dc:Bounds x="2764" y="1008" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p_valid_p_draft_di" bpmnElement="Flow_p_valid_p_draft"><di:waypoint x="2750" y="1055" /><di:waypoint x="2750" y="1075" /><di:waypoint x="2470" y="1075" /><di:waypoint x="2470" y="1070" /><bpmndi:BPMNLabel><dc:Bounds x="2650" y="1053" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_e_start_e_write_di" bpmnElement="Flow_e_start_e_write"><di:waypoint x="3048" y="1310" /><di:waypoint x="3120" y="1310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_e_write_e_end_di" bpmnElement="Flow_e_write_e_end"><di:waypoint x="3220" y="1310" /><di:waypoint x="3292" y="1310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_trainee_o_start_di" bpmnElement="Msg_trainee_o_start"><di:waypoint x="230" y="120" /><di:waypoint x="230" y="212" /><bpmndi:BPMNLabel><dc:Bounds x="234" y="138" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_o_ask_trainee_di" bpmnElement="Msg_o_ask_trainee"><di:waypoint x="930" y="212" /><di:waypoint x="930" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="934" y="174" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_trainee_o_answers_di" bpmnElement="Msg_trainee_o_answers"><di:waypoint x="1070" y="120" /><di:waypoint x="1070" y="212" /><bpmndi:BPMNLabel><dc:Bounds x="1074" y="138" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_o_reqk_k_start_di" bpmnElement="Msg_o_reqk_k_start"><di:waypoint x="1350" y="368" /><di:waypoint x="1350" y="732" /><bpmndi:BPMNLabel><dc:Bounds x="1354" y="416" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_k_search_web_di" bpmnElement="Msg_k_search_web"><di:waypoint x="1470" y="790" /><di:waypoint x="1470" y="860" /><bpmndi:BPMNLabel><dc:Bounds x="1376" y="815" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_web_k_search_di" bpmnElement="Msg_web_k_search"><di:waypoint x="1510" y="860" /><di:waypoint x="1510" y="790" /><bpmndi:BPMNLabel><dc:Bounds x="1514" y="815" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_k_end_o_gotk_di" bpmnElement="Msg_k_end_o_gotk"><di:waypoint x="1910" y="732" /><di:waypoint x="1910" y="368" /><bpmndi:BPMNLabel><dc:Bounds x="1914" y="694" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_o_reqp_p_start_di" bpmnElement="Msg_o_reqp_p_start"><di:waypoint x="2190" y="368" /><di:waypoint x="2190" y="1012" /><bpmndi:BPMNLabel><dc:Bounds x="2194" y="416" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_p_cal_cal_di" bpmnElement="Msg_p_cal_cal"><di:waypoint x="2310" y="1070" /><di:waypoint x="2310" y="1140" /><bpmndi:BPMNLabel><dc:Bounds x="2216" y="1095" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_cal_p_cal_di" bpmnElement="Msg_cal_p_cal"><di:waypoint x="2350" y="1140" /><di:waypoint x="2350" y="1070" /><bpmndi:BPMNLabel><dc:Bounds x="2354" y="1095" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_p_end_o_gotp_di" bpmnElement="Msg_p_end_o_gotp"><di:waypoint x="2890" y="1012" /><di:waypoint x="2890" y="368" /><bpmndi:BPMNLabel><dc:Bounds x="2894" y="974" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_o_reqe_e_start_di" bpmnElement="Msg_o_reqe_e_start"><di:waypoint x="3030" y="368" /><di:waypoint x="3030" y="1292" /><bpmndi:BPMNLabel><dc:Bounds x="3034" y="416" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_e_end_o_gote_di" bpmnElement="Msg_e_end_o_gote"><di:waypoint x="3310" y="1292" /><di:waypoint x="3310" y="368" /><bpmndi:BPMNLabel><dc:Bounds x="3314" y="1254" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_o_present_trainee_di" bpmnElement="Msg_o_present_trainee"><di:waypoint x="3450" y="212" /><di:waypoint x="3450" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="3454" y="174" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_trainee_o_decision_di" bpmnElement="Msg_trainee_o_decision"><di:waypoint x="3590" y="120" /><di:waypoint x="3590" y="212" /><bpmndi:BPMNLabel><dc:Bounds x="3594" y="138" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_o_noplan_trainee_di" bpmnElement="Msg_o_noplan_trainee"><di:waypoint x="3870" y="442" /><di:waypoint x="3870" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="3874" y="404" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_o_calendar_cal_di" bpmnElement="Msg_o_calendar_cal"><di:waypoint x="4150" y="390" /><di:waypoint x="4150" y="1140" /><bpmndi:BPMNLabel><dc:Bounds x="4154" y="408" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_o_startmon_mon_di" bpmnElement="Msg_o_startmon_mon"><di:waypoint x="4290" y="368" /><di:waypoint x="4290" y="1420" /><bpmndi:BPMNLabel><dc:Bounds x="4294" y="416" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Msg_o_done_trainee_di" bpmnElement="Msg_o_done_trainee"><di:waypoint x="4430" y="212" /><di:waypoint x="4430" y="120" /><bpmndi:BPMNLabel><dc:Bounds x="4434" y="174" width="90" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
