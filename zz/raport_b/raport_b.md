@@ -27,39 +27,9 @@ The system is discipline-agnostic. It is not tied to running, even though the in
 
 The design is platform-neutral. No agent framework has been chosen yet (see section 9).
 
-### 1.1 Method
-
-The multi-agent part is designed with the original Gaia methodology (Wooldridge, Jennings, Kinny, 2000):
-
-- **Analysis:** roles model (role schemas) and interaction model (protocol definitions).
-- **Design:** agent model, services model and acquaintance model.
-
-Gaia has no requirements phase, so the requirements are listed separately in section 3. Gaia also says nothing about process flow, so the processes are described in BPMN 2.0 (section 6): one conversation diagram for the whole system, plus a choreography diagram and a collaboration diagram for each of the four processes.
-
-Notation used in the Gaia models:
-
-| Element | Convention |
-|---|---|
-| Role | `UPPERCASE`, e.g. `PLANNER` |
-| Protocol | `CamelCase`, e.g. `PlanRequest`; always involves another role |
-| Activity | `CamelCase`, listed separately from protocols; done by the role alone |
-| Information | `camelCase`, e.g. `currentPlan` (glossary in section 4.1) |
-
-Liveness operators:
-
-| Operator | Meaning |
-|---|---|
-| `x . y` | x followed by y |
-| `x \| y` | x or y |
-| `x*` | x zero or more times |
-| `x+` | x one or more times |
-| `xω` | x repeated forever |
-| `[x]` | x is optional |
-| `x \|\| y` | x and y interleaved |
-
 ## 2. System context
 
-The trainee only ever talks to the web app. Everything else (calendar, activity platform, web search) is reached through integrations owned by the backend. From the agents' point of view, those integrations are part of the environment: agents read from them and write to them, but don't negotiate with them. That is why they appear as Gaia permissions rather than as roles.
+The trainee only ever talks to the web app. Everything else (calendar, activity platform, web search) is reached through integrations owned by the backend. From the agents' point of view, those integrations are part of the environment.
 
 ```mermaid
 flowchart LR
@@ -195,7 +165,7 @@ The role permissions below refer to these pieces of information.
 
 ### 4.2 Roles model
 
-There are seven roles. The trainee is not a role. They are outside the agent organisation and reach it only through the web app. In the Gaia sense, the web app is part of the environment, which is why `USERHANDLER` uses activities (`AwaitUserInput`, `ShowToUser`) for contact with the trainee rather than protocols.
+There are seven roles. The trainee is not a role and reaches the system only through the web app.
 
 | Role                  | One-line description                                          |
 | --------------------- | ------------------------------------------------------------- |
@@ -303,8 +273,6 @@ The second safety condition means the explainer can't cite a source that the kno
 
 ### 4.3 Interaction model
 
-Each protocol is a single message. A request and its reply are listed as two protocols, the way the Gaia paper does with `CostingRequest` / `ReturnCosting`. That keeps the liveness expressions readable on both sides.
-
 | Protocol | Purpose | Initiator | Responder | Inputs | Outputs | Processing |
 |---|---|---|---|---|---|---|
 | `SubmitRequest` | Hand over a new request from the trainee | `USERHANDLER` | `WORKFLOWMANAGER` | request type; `profile`, `changeReport` or `healthReport` | – | Workflow manager starts the matching process, or queues it if one is already running |
@@ -324,9 +292,6 @@ Each protocol is a single message. A request and its reply are listed as two pro
 | `PlanUpdated` | Tell the monitor which plan version to track | `WORKFLOWMANAGER` | `PROGRESSMONITOR` | `currentPlan` | – | Monitor replaces the tracked version; a suspended plan stops reporting |
 | `ReportDeviation` | Report a significant deviation | `PROGRESSMONITOR` | `WORKFLOWMANAGER` | `deviation` | – | Starts an adaptation (process 2) |
 | `WeeklyReview` | Deliver the weekly summary | `PROGRESSMONITOR` | `WORKFLOWMANAGER` | `weeklySummary` | – | Starts the weekly review (process 3) |
-
-Web search, the calendar and the activity platform don't appear here, because they aren't roles. Reading from and writing to them is covered by the permissions `webContent`, `calendarAvailability`, `calendarEvents` and `activityLog`.
-
 ## 5. Gaia design
 
 ### 5.1 Agent model
@@ -365,8 +330,6 @@ This hybrid was chosen over two alternatives:
 The cost of the hybrid is two agent lifecycles to manage. Every request to a shared specialist must also carry all the context it needs.
 
 ### 5.2 Services model
-
-Services come from each role's protocols, activities and responsibilities. Inputs and outputs come from the protocols. Pre- and postconditions come from the safety conditions.
 
 **CoordinatorAgent**
 
@@ -428,46 +391,11 @@ flowchart LR
     MA --> CA
 ```
 
-An arrow `a → b` means `a` sends messages to `b`. The structure is a star: the specialists never talk to each other, only to the coordinator.
-
-That keeps coupling low. The planner doesn't need to know the explainer exists, and swapping one specialist's implementation doesn't affect the others.
-
-Normally a star makes the centre a bottleneck. Here there is one coordinator per trainee, so the centre isn't shared between trainees. The real shared resources are the specialist pools, which is why they have the `+` qualifier and are designed to be stateless.
+The specialists never talk to each other, only to the coordinator. Because there is one coordinator per trainee, the hub isn't shared between trainees. The shared resources are the stateless specialist pools.
 
 ## 6. Processes (BPMN 2.0)
 
-Gaia concepts map to BPMN like this:
-
-| Gaia | BPMN |
-|---|---|
-| Agent type | Pool |
-| Role within an agent | Lane |
-| Protocol | Message flow (between pools) or sequence flow (between lanes of the same agent) |
-| Activity | Task |
-| Environment (trainee via web app, web search, calendar, activity platform) | Black-box pool |
-
-There are four processes:
-
-1. Onboarding and the initial plan.
-2. Plan adaptation after a reported change or a detected deviation.
-3. Progress monitoring and the weekly review.
-4. Injury, illness and recovery reports.
-
-The conversation diagram below covers all of them. Each process then has a choreography diagram (the order of interactions) and a collaboration diagram (what each agent does).
-
-The Mermaid diagrams are approximations, since Mermaid has no BPMN notation:
-
-- circles are events;
-- double circles are end events;
-- diamonds are gateways;
-- boxes are tasks;
-- solid arrows are sequence flows;
-- dashed arrows are message flows;
-- "receive" and "send" in an event's label stand for the white and black envelope.
-
-In the collaboration diagrams, pools are drawn as vertical columns with the flow running top to bottom. Mermaid lays them out far more readably that way. Black-box pools appear as plain boxes outside any column.
-
-The authoritative collaboration diagrams are the `.bpmn` files in [`bpmn/`](bpmn/), which use the usual horizontal pools. They open in Camunda Modeler or at [demo.bpmn.io](https://demo.bpmn.io), and each has an SVG rendering next to it.
+The Mermaid diagrams are approximations. The authoritative collaboration diagrams are the `.bpmn` files in [`bpmn/`](bpmn/), each with an SVG rendering next to it.
 
 ### 6.1 Conversation diagram
 
@@ -516,7 +444,7 @@ flowchart LR
 
 The trainee fills in the onboarding form. The profile manager checks it, and the trainee answers follow-up questions until nothing is missing. The knowledge agent researches the discipline and goal, and the planner drafts the full plan, reading the calendar and checking hard constraints. The explainer writes the explanation. If the trainee rejects the proposal, the planner tries again with the trainee's reason, up to the attempt limit. If they accept, the plan is saved, written to the calendar and handed to a new monitoring agent.
 
-**Choreography.** Each box shows the initiator on the first line, the interaction in bold, and the receiver on the last line.
+**Choreography**
 
 ```mermaid
 flowchart LR
