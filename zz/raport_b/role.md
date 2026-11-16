@@ -72,3 +72,5 @@ Jest to architektura hierarchiczna, gdzie koordynator decyduje o kolejnych kroka
     - GetFreeTime: zwraca wolny czas w kalendarzu użytkownika
   - pozwolenia:
     - reads calendar: dostęp do kalendarza użytkownika
+
+![](role-diagram.drawio.svg)
