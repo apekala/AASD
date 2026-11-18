@@ -1,0 +1,19 @@
+Rola: UserDataCollector
+
+Opis: Dostarcza wiedzę o użytkowniku i informuje o zmianach jej stanu
+
+Protokoły i aktywności: ReadData, CheckIfDataChanged, InformAboutDataChange, AwaitDataRequest, SendRequestedData
+
+Pozwolenia:
+  reads  workoutData
+	 userData
+  reads supplied knowledgeType
+  generates dataChangeInfo
+
+
+Obowiązki:
+  liveness:
+	    HandleChangedData (CheckIfDataChanged . InformAboutDataChange)ω
+	    SupplyRequestedData (AwaitDataRequest . ReadData . SendRequestedData)ω
+  safety:
+	    dataChanged = false => informationAboutDataChange = NULL	    
