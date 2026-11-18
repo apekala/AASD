@@ -56,5 +56,3 @@ RefreshKnowledge = SearchSources . EvaluateSources . [UpdateKnowledge]
 - Zapis do sportKnowledge ⇒ ocenione źródła wskazane w sourceReferences, zakres zastosowania i data sprawdzenia.
 - knowledgeResponse odpowiada sport, trainingGoal i question; brak podstaw, sprzeczności oraz nieaktualność materiałów są jawne.
 - Błąd wyszukiwania lub zapisu ⇒ zachowanie poprzedniej zawartości sportKnowledge i jej dat sprawdzenia.
-
-**Notacja:** `.` — kolejność, `|` — alternatywa, `[x]` — krok zależny od opisanych warunków, `^ω` — nieskończone powtarzanie cyklu obsługi. Aktywności lokalne są podkreślone. Harmonogram, aktualność i limit czasu wyszukiwania są parametrami; oczekujące zadania muszą być obsługiwane bez pomijania któregoś rodzaju pracy.

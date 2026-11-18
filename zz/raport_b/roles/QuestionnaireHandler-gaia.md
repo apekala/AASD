@@ -44,10 +44,10 @@ Zbiera informacje o realizacji treningów, samopoczuciu i powodach odrzucenia pl
 
 ```text
 QuestionnaireHandler = (QuestionnaireTask | SummaryTask)^ω
-QuestionnaireTask = (GenerateQuestionnaire | CheckQuestionnaireDue) .
+QuestionnaireTask    = (GenerateQuestionnaire | CheckQuestionnaireDue) .
     PrepareQuestionnaire .
-    (QuestionnaireInteraction . ValidateAnswers . [SaveAnswers]
-     | RecordQuestionnaireError) .
+    (QuestionnaireInteraction . ValidateAnswers . ([SaveAnswers]
+     | RecordQuestionnaireError)) .
     ReturnQuestionnaireResult
 SummaryTask = GetSummary . BuildSummary . ReturnSummary
 ```
@@ -61,5 +61,3 @@ SummaryTask = GetSummary . BuildSummary . ReturnSummary
 - Zapis odpowiedzi ⇒ poprawne dane, zgodny userId i identyfikator ankiety; dane zachowują pochodzenie ankietowe i nie nadpisują danych z integracji w userData.
 - Brak odpowiedzi lub odmowa ⇒ zapis wyłącznie statusu i metadanych, bez domyślnych deklaracji o treningu czy samopoczuciu.
 - questionnaireSummary wynika wyłącznie z questionnaireHistory w zakresie summaryScope i wskazuje brakujące dane.
-
-**Notacja:** `.` — kolejność, `|` — alternatywa, `[x]` — krok zależny od opisanych warunków, `^ω` — nieskończone powtarzanie cyklu obsługi. Aktywności lokalne są podkreślone. Harmonogram i termin odpowiedzi są parametrami; oczekujące zadania muszą być obsługiwane bez pomijania któregoś rodzaju pracy.
