@@ -12,20 +12,20 @@ Pozyskuje, ocenia i przechowuje wiedzę treningową dotyczącą dyscypliny i cel
 
 | Nazwa | Opis |
 | --- | --- |
-| `GetSportKnowledge` | Koordynator lub Planer → Pozyskiwacz wiedzy o sporcie: pytanie z dyscypliną i celem treningowym. |
-| `ReturnSportKnowledge` | Pozyskiwacz wiedzy o sporcie → inicjator zapytania: odpowiedź ze źródłami i ograniczeniami albo informacja o braku wystarczającej wiedzy lub błędzie. Zamyka interakcję GetSportKnowledge. |
+| `SportKnowledgeRequest` | Koordynator lub Planer → Pozyskiwacz wiedzy o sporcie: pytanie z dyscypliną i celem treningowym. |
+| `SportKnowledgeResponse` | Pozyskiwacz wiedzy o sporcie → inicjator zapytania: odpowiedź ze źródłami i ograniczeniami albo informacja o braku wystarczającej wiedzy lub błędzie. Zamyka interakcję SportKnowledgeRequest. |
 
 ### Aktywności lokalne
 
 | Nazwa | Opis |
 | --- | --- |
-| <u>ReadKnowledge</u> | Sprawdza parametry i wyszukuje w bazie wiedzę pasującą do pytania; ocenia jej kompletność i aktualność. |
-| <u>CheckRefreshDue</u> | Sprawdza termin okresowej aktualizacji; jeden termin uruchamia jedno odświeżenie. |
-| <u>RefreshKnowledge</u> | Złożona aktywność: wyszukanie materiałów, ich ocena i ewentualna aktualizacja bazy; kończy się wynikiem odświeżenia. |
-| <u>SearchSources</u> | Wyszukuje publikacje naukowe i materiały specjalistów. Internet jest zasobem środowiska. |
-| <u>EvaluateSources</u> | Ocenia autorstwo, datę i przydatność materiałów; wyodrębnia informacje wraz ze źródłami, rozbieżnościami i ograniczeniami. |
-| <u>UpdateKnowledge</u> | Zapisuje zaakceptowaną wiedzę ze źródłami, oceną materiałów, zakresem zastosowania i datą sprawdzenia. |
-| <u>BuildKnowledgeResponse</u> | Przygotowuje odpowiedź i wskazuje ograniczenia, brak wiedzy lub przyczynę błędu. |
+| `ReadKnowledge` | Sprawdza parametry i wyszukuje w bazie wiedzę pasującą do pytania; ocenia jej kompletność i aktualność. |
+| `CheckRefreshDue` | Sprawdza termin okresowej aktualizacji; jeden termin uruchamia jedno odświeżenie. |
+| `RefreshKnowledge` | Złożona aktywność: wyszukanie materiałów, ich ocena i ewentualna aktualizacja bazy; kończy się wynikiem odświeżenia. |
+| `SearchSources` | Wyszukuje publikacje naukowe i materiały specjalistów. Internet jest zasobem środowiska. |
+| `EvaluateSources` | Ocenia autorstwo, datę i przydatność materiałów; wyodrębnia informacje wraz ze źródłami, rozbieżnościami i ograniczeniami. |
+| `UpdateKnowledge` | Zapisuje zaakceptowaną wiedzę ze źródłami, oceną materiałów, zakresem zastosowania i datą sprawdzenia. |
+| `BuildKnowledgeResponse` | Przygotowuje odpowiedź i wskazuje ograniczenia, brak wiedzy lub przyczynę błędu. |
 
 ## Permissions
 
@@ -42,9 +42,9 @@ Pozyskuje, ocenia i przechowuje wiedzę treningową dotyczącą dyscypliny i cel
 
 ```text
 SportKnowledgeCollector = (KnowledgeTask | RefreshTask)^ω
-KnowledgeTask = GetSportKnowledge . ReadKnowledge . (BuildKnowledgeResponse | (RefreshKnowledge . BuildKnowledgeResponse)) . ReturnSportKnowledge
-RefreshTask = CheckRefreshDue . RefreshKnowledge
-RefreshKnowledge = SearchSources . EvaluateSources . [UpdateKnowledge]
+KnowledgeTask           = (SportKnowledgeRequest . ReadKnowledge . (BuildKnowledgeResponse | (RefreshKnowledge . BuildKnowledgeResponse)) . SportKnowledgeResponse)
+RefreshTask             = (CheckRefreshDue . RefreshKnowledge)
+RefreshKnowledge        = (SearchSources . EvaluateSources . [UpdateKnowledge])
 ```
 
 - `KnowledgeTask` oznacza obsługę jednego zapytania, a `RefreshTask` — jednego okresowego odświeżenia. Zakres okresowej aktualizacji wynika z ustawień.

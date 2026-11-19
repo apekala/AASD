@@ -12,16 +12,17 @@ Generuje plan treningów użytkownika
 
 | Nazwa | Opis |
 | --- | --- |
-| GetFreeTime | Planner -> CalendarManager: zapytanie o czas wolny użytkownika |
-| GetSportKnowledge | Planner -> SportKnowledgeCollector: zapytanie o wiedzę o sporcie |
-| GetPlan | Coordinator -> Planner: prośba o plan |
-| ReturnPlan | Planner -> Coordinator: zwrócenie planu |
+| `GetFreeTime` | Planner -> CalendarManager: zapytanie o czas wolny użytkownika |
+| `GetSportKnowledge` | Planner -> SportKnowledgeCollector: zapytanie o wiedzę o sporcie |
+| `GeneratePlanRequest` | Coordinator -> Planner: prośba o plan |
+| `GeneratePlanResponse` | Planner -> Coordinator: zwrócenie planu |
 
 ### Aktywności
 
 | Nazwa | Opis |
 | --- | --- |
-| <u>GeneratrPlan</u> | Generacja planu treningów na podstawie wiedzy o użytkowniku, jego kalendarza i wiedzy sporcie |
+| `GeneratePlan` | Wygenerowanie planu. |
+
 
 ## Permissions
 
@@ -36,9 +37,8 @@ Generuje plan treningów użytkownika
 ### Liveness
 
 ```text
-Planner         = (GetPlan . MakePlan . ReturnPlan)^ω
-MakePlan        = (CheckPlanChanged . [GenerateNewPlan] . ReturnPlan)
-GenerateNewPlan = (GetFreeTime . GetSportKnowledge . GeneratePlan)
+Planner         = (GeneratePlanRequest . MakePlan . GeneratePlanResponse)^ω
+MakePlan        = (CheckPlanChanged . [GetFreeTime . GetSportKnowledge . GeneratePlan])
 ```
 
 ### Safety

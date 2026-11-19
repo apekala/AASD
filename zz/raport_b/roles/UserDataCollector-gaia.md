@@ -13,15 +13,15 @@ Dostarcza wiedzę o użytkowniku i informuje o zmianach jej stanu.
 | Nazwa | Opis |
 | --- | --- |
 | `UserDataChanged` | Poinformowanie o zmianie danych użytkownika. |
-| `AwaitDataRequest` | Oczekiwanie na żądanie udostępnienia danych. |
-| `SendRequestedData` | Przekazanie żądanych danych. |
+| `UserKnowledgeRequest` | Oczekiwanie na żądanie udostępnienia danych. |
+| `UserKnowledgeResponse` | Przekazanie żądanych danych. |
 
 ### Aktywności lokalne
 
 | Nazwa | Opis |
 | --- | --- |
-| <u>CheckIfDataChanged</u> | Sprawdzenie, czy dane użytkownika uległy zmianie. |
-| <u>ReadUserData</u> | Odczyt danych użytkownika. |
+| `CheckIfDataChanged` | Sprawdzenie, czy dane użytkownika uległy zmianie. |
+| `ReadUserData` | Odczyt danych użytkownika. |
 
 ## Permissions
 
@@ -38,7 +38,7 @@ Dostarcza wiedzę o użytkowniku i informuje o zmianach jej stanu.
 ```text
 UserDataCollector = (HandleChangedData | SupplyRequestedData)^ω
 HandleChangedData = (CheckIfDataChanged . [InformAboutDataChange])
-SupplyRequestedData = (AwaitDataRequest . ReadData . SendRequestedData)
+SupplyRequestedData = (UserKnowledgeRequest . ReadData . UserKnowledgeResponse)
 ```
 
 ### Safety

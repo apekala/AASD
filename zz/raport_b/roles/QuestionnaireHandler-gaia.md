@@ -22,18 +22,18 @@ Zbiera informacje o realizacji treningów, samopoczuciu i powodach odrzucenia pl
 
 | Nazwa | Opis |
 | --- | --- |
-| <u>CheckQuestionnaireDue</u> | Sprawdza, czy nadszedł termin ankiety okresowej; jeden termin uruchamia jedną ankietę. |
-| <u>PrepareQuestionnaire</u> | Sprawdza parametry i przygotowuje pytania wraz z identyfikatorem ankiety i terminem odpowiedzi. |
-| <u>ValidateAnswers</u> | Sprawdza poprawność odpowiedzi i ich przypisanie do użytkownika oraz ankiety; oznacza braki, odmowę i błędy. |
-| <u>SaveAnswers</u> | Zapisuje poprawne odpowiedzi z czasem, identyfikatorem ankiety i pochodzeniem ankietowym. |
-| <u>RecordQuestionnaireError</u> | Przy błędzie parametrów lub przygotowania ankiety ustala wynik z przyczyną niepowodzenia. |
-| <u>BuildSummary</u> | Podsumowuje historię ankiet w żądanym zakresie, zachowując informację o brakujących danych. |
+| `CheckQuestionnaireDue` | Sprawdza, czy nadszedł termin ankiety okresowej; jeden termin uruchamia jedną ankietę. |
+| `PrepareQuestionnaire` | Sprawdza parametry i przygotowuje pytania wraz z identyfikatorem ankiety i terminem odpowiedzi. |
+| `ValidateAnswers` | Sprawdza poprawność odpowiedzi i ich przypisanie do użytkownika oraz ankiety; oznacza braki, odmowę i błędy. |
+| `SaveAnswers` | Zapisuje poprawne odpowiedzi z czasem, identyfikatorem ankiety i pochodzeniem ankietowym. |
+| `RecordQuestionnaireError` | Przy błędzie parametrów lub przygotowania ankiety ustala wynik z przyczyną niepowodzenia. |
+| `BuildSummary` | Podsumowuje historię ankiet w żądanym zakresie, zachowując informację o brakujących danych. |
 
 ## Permissions
 
 | Pozwolenie | Zakres |
 | --- | --- |
-| `reads supplied userId, questionnaireRequest, questionnaireAnswers, summaryScope` | Użytkownik, cel i kontekst ankiety, odebrane odpowiedzi oraz zakres podsumowania. |
+| `reads supplied questionnaireRequest, questionnaireContext, summaryScope` | Cel i kontekst ankiety, odebrane odpowiedzi oraz zakres podsumowania. |
 | `reads questionnaireSettings, questionnaireHistory` | Harmonogram i cel ankiet okresowych, termin oczekiwania oraz historia ankiet użytkownika stanowiąca część userData. |
 | `generates questionnaire, questionnaireResult, questionnaireSummary` | Pytania, wynik obsługi ankiety i podsumowanie. |
 | `changes userData` | Wyłącznie część ankietowa: odpowiedzi, metadane i statusy ankiet, dostępne następnie w questionnaireHistory. |
