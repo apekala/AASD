@@ -12,9 +12,7 @@ Dostarcza wiedzę o użytkowniku i informuje o zmianach jej stanu.
 
 | Nazwa | Opis |
 | --- | --- |
-| `ReadData` | Odczyt danych użytkownika. |
-| `CheckIfDataChanged` | Sprawdzenie, czy dane użytkownika uległy zmianie. |
-| `InformAboutDataChange` | Poinformowanie o zmianie danych użytkownika. |
+| `UserDataChanged` | Poinformowanie o zmianie danych użytkownika. |
 | `AwaitDataRequest` | Oczekiwanie na żądanie udostępnienia danych. |
 | `SendRequestedData` | Przekazanie żądanych danych. |
 
@@ -22,8 +20,8 @@ Dostarcza wiedzę o użytkowniku i informuje o zmianach jej stanu.
 
 | Nazwa | Opis |
 | --- | --- |
-| <u>HandleChangedData</u> | Monitorowanie zmian danych użytkownika i informowanie o wykrytych zmianach. |
-| <u>SupplyRequestedData</u> | Oczekiwanie na żądanie, odczyt odpowiednich danych i przekazanie ich odbiorcy. |
+| <u>CheckIfDataChanged</u> | Sprawdzenie, czy dane użytkownika uległy zmianie. |
+| <u>ReadUserData</u> | Odczyt danych użytkownika. |
 
 ## Permissions
 
@@ -39,10 +37,10 @@ Dostarcza wiedzę o użytkowniku i informuje o zmianach jej stanu.
 
 ```text
 UserDataCollector = (HandleChangedData | SupplyRequestedData)^ω
-HandleChangedData = (CheckIfDataChanged . InformAboutDataChange)^ω
-SupplyRequestedData = (AwaitDataRequest . ReadData . SendRequestedData)^ω
+HandleChangedData = (CheckIfDataChanged . [InformAboutDataChange])
+SupplyRequestedData = (AwaitDataRequest . ReadData . SendRequestedData)
 ```
 
 ### Safety
 
-- `dataChanged = false` ⇒ `informationAboutDataChange = NULL`
+- **true**
