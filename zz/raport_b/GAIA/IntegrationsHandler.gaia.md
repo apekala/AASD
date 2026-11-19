@@ -12,7 +12,7 @@ Zarządza integracjami - połączeniami z innymi aplikacjami i urządzeniami, np
 
 | Nazwa | Opis |
 | --- | --- |
-| `IntegrationChanged` | Poinformowanie o zmianie w kalendarzu. |
+| `IntegrationChanged` | IntegrationsHandler -> UserDataCollector: poinformowanie o zmianie w integracjach (dodanie lub usunięcie integracji). |
 | `IntegrationsRequest` | Oczekiwanie na żądanie odczytu wolnego czasu z kalendarza. |
 | `IntegrationsResponse` | Przekazanie żądanych danych. |
 
@@ -36,7 +36,7 @@ Zarządza integracjami - połączeniami z innymi aplikacjami i urządzeniami, np
 ### Liveness
 
 ```text
-IntegrationsHandler = ((CheckIntegrations . [SaveIntegrationData]) | SupplyRequestedData)^ω
+IntegrationsHandler = ((CheckIntegrations . [SaveIntegrationData] . [IntegrationChanged]) | SupplyRequestedData)^ω
 SupplyRequestedData = (IntegrationsRequest . ReadIntegrations . IntegrationsResponse)
 ```
 

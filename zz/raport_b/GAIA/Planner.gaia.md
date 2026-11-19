@@ -21,6 +21,7 @@ Generuje plan treningów użytkownika
 
 | Nazwa | Opis |
 | --- | --- |
+| `CheckPlanChanged` | Sprawdza, czy aktualny plan wymaga zmiany w świetle wiedzy o użytkowniku. Gdy plan na wejściu to NULL, zmiana jest zawsze wymagana. |
 | `GeneratePlan` | Wygenerowanie planu. |
 
 
@@ -30,7 +31,8 @@ Generuje plan treningów użytkownika
 | --- | --- |
 | `reads supplied userKnowledge` | Na wejściu otrzymuje wiedzę o użytkowniku w postaci skondensowanej |
 | `reads sportKnowledge` | Odczytuje wiedzę o sporcie |
-| `generates userPlan` | Generuje plan treningu użytkownika |
+| `generates userPlan, planRationale, sourceReferences` | Generuje plan treningu użytkownika wraz z uzasadnieniem i odwołaniami do źródeł |
+| `generates isPlanSafe, isPlanPossible` | Wyniki kontroli planu, na których opierają się warunki safety |
 
 ## Responsibilities
 
