@@ -1,4 +1,5 @@
 # Projekt systemu wieloagentowego – Inteligentny Asystent Treningowy (Gaia + BPMN)
+*Autorzy: Antoni Pękała, Natalia Prokopiuk, Julian Uziembło, Franciszek Zarębski*
 
 ## 1. Wprowadzenie i cel systemu
 
@@ -110,23 +111,6 @@ W systemie wyodrębniono **7 wyspecjalizowanych ról**, z których każda posiad
 
 ### 3.2. Model Interakcji
 
-Komunikacja między rolami opiera się na zdefiniowanym zestawie protokołów wymiany wiadomości:
-
-| Protokół | Inicjator | Odbiorca | Przekazywane dane / Cel |
-| :--- | :--- | :--- | :--- |
-| `UserKnowledgeChanged` | `UserDataCollector` | `Coordinator` | Powiadomienie o zmianie stanu wiedzy o użytkowniku (`knowledgeTypes`, `newUserKnowledge`). |
-| `UserKnowledgeRequest` / `Response` | `Coordinator` | `UserDataCollector` | Żądanie i przekazanie wiedzy o użytkowniku dla zadanego `knowledgeType`. |
-| `CalendarChanged` | `CalendarManager` | `Coordinator` | Powiadomienie o zmianie stanu kalendarza użytkownika (`newCalendarEvents`). |
-| `FreeTimeRequest` / `Response` | `Planner` | `CalendarManager` | Zapytanie o wolne okna czasowe i zwrot listy `freeTime`. |
-| `SavePlan` | `Coordinator` | `CalendarManager` | Zlecenie zapisania zaakceptowanego `userPlan` w kalendarzu. |
-| `SportKnowledgeRequest` / `Response` | `Coordinator` / `Planner` | `SportKnowledgeCollector` | Zapytanie o wiedzę dziedzinową (`sportType`, `trainingGoal`, `question`) i zwrot `sportKnowledge`. |
-| `GeneratePlanRequest` / `Response` | `Coordinator` | `Planner` | Prośba o wygenerowanie planu na bazie `userKnowledge` i zwrot `userPlan`. |
-| `GenerateQuestionnaire` / `ReturnResult` | `Coordinator` | `QuestionnaireHandler` | Zlecenie ankiety dla użytkownika i zwrot wyników (`questionnaireResult`). |
-| `QuestionnaireInteraction` | `QuestionnaireHandler` | `User` | Prezentacja pytań ankietowych użytkownikowi i odbiór odpowiedzi. |
-| `GetSummary` / `ReturnSummary` | `Coordinator` | `QuestionnaireHandler` | Żądanie podsumowania historii ankiet (`timeSpan`, `questionnaireTopic`) i zwrot `questionnaireSummary`. |
-| `IntegrationsRequest` / `Response` | `UserDataCollector` | `IntegrationsHandler` | Pobranie informacji o aktywnych integracjach użytkownika (`integrations`). |
-| `IntegrationChanged` | `IntegrationsHandler` | `UserDataCollector` | Powiadomienie o dodaniu lub usunięciu integracji (`integrationType`, `newIntegration`). |
-
 ---
 
 ![model-interakcji](faza-analizy/model-interakcji.drawio.svg)
@@ -146,6 +130,8 @@ W procesie mapowania ról na typy agentów zastosowano dekompozycję 1:1 dla gł
 | **`QuestionnaireAgent`** | `QuestionnaireHandler` | `1` | Pojedynczy moduł zarządzający harmonogramem ankiet, interakcją i historią odpowiedzi. |
 | **`SportKnowledgeAgent`** | `SportKnowledgeCollector` | `1` | Wspólna baza wiedzy dziedzinowej i moduł wyszukiwania źródeł dla całego systemu. |
 | **`UserDataAgent`** | `UserDataCollector`<br>`IntegrationsHandler`<br>`CalendarManager` | `1` | Agregacja ról operujących bezpośrednio na danych użytkownika, jego kalendarzu oraz zewnętrznych API (Strava, Google Fit) ogranicza narzut komunikacji sieciowej przy częstej synchronizacji danych. |
+
+---
 
 ![model-agentow](faza-projektowania/model-agentow.drawio.svg)
 
